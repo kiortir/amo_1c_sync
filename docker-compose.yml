@@ -5,7 +5,7 @@ services:
   traefik:
     image: traefik:v2.8
     # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
+    # command: --api.insecure=true --providers.docker
     ports:
       # The HTTP port
       - "80:80"
@@ -14,7 +14,7 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
-      # - "$PWD/services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
+      - "./services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
 
   rabbitmq:
     image: rabbitmq:3.9-management-alpine
@@ -39,9 +39,12 @@ services:
       - rabbitmq
     # build:
     #    context: ./app
-    command: gunicorn app.main:app --bind 0.0.0.0:5000 -k uvicorn.workers.UvicornWorker
-    expose:
-      - 5000
+    command: gunicorn app.main:app --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
+    # expose:
+    #   - 8000
+    volumes:
+      - .:/app
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`176.124.192.230`)"
