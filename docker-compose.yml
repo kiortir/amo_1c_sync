@@ -2,7 +2,7 @@ version: '3'
 
 services:
 
-  reverse-proxy:
+  traefik:
     image: traefik:v2.8
     # Enables the web UI and tells Traefik to listen to docker
     command: --api.insecure=true --providers.docker
@@ -14,6 +14,7 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+      - "$PWD/services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
 
   rabbitmq:
     image: rabbitmq:3.9-management-alpine
@@ -32,13 +33,18 @@ services:
   application:
     image: amo1csync:latest
     container_name: fastapi
-    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
 
     depends_on:
       - rabbitmq
+    # build:
+    #    context: ./app
+    command: gunicorn main:app --bind 0.0.0.0:5000 -k uvicorn.workers.UvicornWorker
+    expose:
+      - 5000
     labels:
-      - "traefik.http.routers.fastapi.rule=Host(`localhost`)"
-
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
     # ports:
     #   - "8080:80"
 
