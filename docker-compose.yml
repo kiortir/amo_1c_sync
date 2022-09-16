@@ -17,13 +17,13 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
       - /var/run/docker.sock:/var/run/docker.sock
-      - "./services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
+      - "./services/traefik/traefik.dev.yml:/etc/traefik/traefik.yml:ro"
       - ./data/acme.json:/acme.json
 
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=https"
-      - "traefik.http.routers.traefik.rule=Host(`176.124.192.230`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.176.124.192.230`)"
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
       - "traefik.http.routers.traefik.service=api@internal"
