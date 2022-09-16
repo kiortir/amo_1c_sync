@@ -44,7 +44,7 @@ services:
       - 5000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
+      - "traefik.http.routers.fastapi.rule=Host(`176.124.192.230`)"
     # ports:
     #   - "8080:80"
 
