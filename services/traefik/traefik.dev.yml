@@ -18,6 +18,16 @@ http:
         scheme: https
         permanent: false
 
+certificatesResolvers:
+  letsEncrypt:
+    acme:
+      email: mpgg2000@gmail.com
+      storage: acme.json
+      caServer: 'https://acme-staging-v02.api.letsencrypt.org/directory'
+      httpChallenge:
+        entryPoint: http
+
+
 api:
   dashboard: true
 

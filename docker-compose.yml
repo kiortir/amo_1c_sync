@@ -61,7 +61,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`176.124.192.230`)"
       - traefik.http.routers.fastapi.tls=true
-      - traefik.http.routers.fastapi.tls.certresolver=sync
+      - traefik.http.routers.fastapi.tls.certresolver=letsEncrypt
     # ports:
     #   - "8080:80"
 
