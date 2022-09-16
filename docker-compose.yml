@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+
+  reverse-proxy:
+    image: traefik:v2.8
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    container_name: rabbitmq
+    command: rabbitmq-server
+    ports:
+        - 5672:5672
+        - 15672:15672
+   
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+
+  application:
+    image: amo1csync:latest
+    container_name: fastapi
+    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+
+    depends_on:
+      - rabbitmq
+    labels:
+      - "traefik.http.routers.fastapi.rule=Host(`localhost`)"
+
+    # ports:
+    #   - "8080:80"
+
+  worker:
+    image: amo1csync:latest
+    container_name: worker
+    command: dramatiq app.tasks
+    restart: on-failure
+    depends_on:
+      - application
+      - rabbitmq
