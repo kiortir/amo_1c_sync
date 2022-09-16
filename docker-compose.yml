@@ -20,10 +20,9 @@ services:
     image: rabbitmq:3.9-management-alpine
     container_name: rabbitmq
     command: rabbitmq-server
-    ports:
-        - 5672:5672
-        - 15672:15672
-   
+    # ports:
+    #     - 5672:5672
+    #     - 15672:15672
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "5672" ]
       interval: 5s
@@ -48,6 +47,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`176.124.192.230`)"
+      - traefik.http.routers.blog.tls=true
+      - traefik.http.routers.blog.tls.certresolver=sync
     # ports:
     #   - "8080:80"
 

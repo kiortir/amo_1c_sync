@@ -1,7 +1,15 @@
 [entryPoints]
-  [entryPoints.web]
-    address = ":80"
+[entryPoints.web]
+address = ":80"
+[entryPoints.websecure]
+address = ":443"
 
+[certificatesResolvers.sync.acme]
+email = "mpgg2000@gmail.com"
+storage = "acme.json"
+[certificatesResolvers.sync.acme.httpChallenge]
+# used during the challenge
+entryPoint = "web"
 [api]
 insecure = true
 
@@ -11,5 +19,5 @@ level = "DEBUG"
 [accessLog]
 
 [providers]
-  [providers.docker]
-    exposedByDefault = false
+[providers.docker]
+exposedByDefault = false
