@@ -1,18 +1,19 @@
 [entryPoints]
-[entryPoints.web]
+[entryPoints.http]
 address = ":80"
 [entryPoints.web.http.redirections]
 [entryPoints.web.http.redirections.entryPoint]
 to = "websecure"
-[entryPoints.websecure]
+[entryPoints.https]
 address = ":443"
 
-[certificatesResolvers.sync.acme]
+[certificatesResolvers.letsEncrypt.acme]
 email = "mpgg2000@gmail.com"
 storage = "acme.json"
+caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
 [certificatesResolvers.sync.acme.httpChallenge]
 # used during the challenge
-entryPoint = "web"
+entryPoint = http
 [api]
 insecure = true
 
@@ -23,4 +24,5 @@ level = "DEBUG"
 
 [providers]
 [providers.docker]
+# endpoint = "unix:///var/run/docker.sock"
 exposedByDefault = false

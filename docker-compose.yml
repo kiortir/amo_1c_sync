@@ -9,12 +9,39 @@ services:
     ports:
       # The HTTP port
       - "80:80"
+      - 443:443
       # The Web UI (enabled by --api.insecure=true)
       - "8080:8080"
     volumes:
       # So that Traefik can listen to the Docker events
+      - /etc/localtime:/etc/localtime:ro
+
       - /var/run/docker.sock:/var/run/docker.sock
       - "./services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
+      - ./data/acme.json:/acme.json
+
+    http:
+      routers:
+        http-catchall:
+          rule: HostRegexp(`{host:.+}`)
+          entrypoints:
+            - http
+          middlewares:
+            - redirect-to-https
+      middlewares:
+        redirect-to-https:
+          redirectScheme:
+            scheme: https
+            permanent: false
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik-traefik.loadbalancer.server.port=888"
 
   rabbitmq:
     image: rabbitmq:3.9-management-alpine
