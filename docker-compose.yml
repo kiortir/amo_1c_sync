@@ -20,20 +20,6 @@ services:
       - "./services/traefik/traefik.dev.toml:/etc/traefik/traefik.toml"
       - ./data/acme.json:/acme.json
 
-    http:
-      routers:
-        http-catchall:
-          rule: HostRegexp(`{host:.+}`)
-          entrypoints:
-            - http
-          middlewares:
-            - redirect-to-https
-      middlewares:
-        redirect-to-https:
-          redirectScheme:
-            scheme: https
-            permanent: false
-
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=https"
