@@ -18,7 +18,7 @@ services:
 
       - /var/run/docker.sock:/var/run/docker.sock
       - "./services/traefik/traefik.dev.yml:/etc/traefik/traefik.yml"
-      - ./data/acme.json:/acme.json
+      - ./services/traefik/acme.json:/acme.json
 
     labels:
       - "traefik.enable=true"
