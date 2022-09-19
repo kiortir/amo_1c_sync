@@ -3,13 +3,13 @@ from typing import Union
 from fastapi import FastAPI
 
 
-try:
-    from app.tasks import example 
-    from app.models import WebHook, BoundHook, LeadStatus
+# try:
+from app.tasks import example 
+from app.models import WebHook, BoundHook, LeadStatus
 
-except ModuleNotFoundError:
-    from tasks import example
-    from models import WebHook, BoundHook, LeadStatus
+# except ModuleNotFoundError:
+#     from tasks import example
+#     from models import WebHook, BoundHook, LeadStatus
 
 
 app = FastAPI()
