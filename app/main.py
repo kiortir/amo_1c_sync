@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 # try:
 from app.tasks import example 
-from models import WebHook, BoundHook, LeadStatus
+from app.models import WebHook, BoundHook, LeadStatus
 
 # except ModuleNotFoundError:
 #     from tasks import example
