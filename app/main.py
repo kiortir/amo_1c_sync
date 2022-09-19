@@ -2,6 +2,9 @@ from typing import Union
 
 from fastapi import FastAPI
 
+import os.path
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # try:
 from app.tasks import example 
