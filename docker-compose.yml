@@ -23,7 +23,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=https"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.176.124.192.230`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.usadba.rockmedia.dev`)"
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -33,9 +33,9 @@ services:
     image: rabbitmq:3.9-management-alpine
     container_name: rabbitmq
     command: rabbitmq-server
-    # ports:
-    #     - 5672:5672
-    #     - 15672:15672
+    ports:
+        - 5672:5672
+        - 15672:15672
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "5672" ]
       interval: 5s
@@ -49,21 +49,21 @@ services:
 
     depends_on:
       - rabbitmq
-    # build:
-    #    context: ./app
+    build:
+       context: ./
     command: gunicorn app.main:app --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
-    # expose:
-    #   - 8000
+    ports:
+        - 80:80
     volumes:
       - .:/app
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`176.124.192.230`)"
+      - "traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)"
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=letsEncrypt
-    # ports:
-    #   - "8080:80"
+    ports:
+      - "8080:80"
 
   worker:
     image: amo1csync:latest
