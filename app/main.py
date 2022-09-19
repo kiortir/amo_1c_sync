@@ -7,8 +7,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # try:
-from app.tasks import example 
-from app.models import WebHook, BoundHook, LeadStatus
+from .tasks import example 
+from .models import WebHook, BoundHook, LeadStatus
 
 # except ModuleNotFoundError:
 #     from tasks import example
