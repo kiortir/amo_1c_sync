@@ -52,8 +52,8 @@ services:
     build:
        context: ./
     command: gunicorn app.main:app --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
-    ports:
-        - 80:80
+    # ports:
+    #     - 80:80
     volumes:
       - .:/app
 
@@ -62,8 +62,8 @@ services:
       - "traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)"
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=letsEncrypt
-    ports:
-      - "8080:80"
+    # ports:
+    #   - "8080:80"
 
   worker:
     image: amo1csync:latest
