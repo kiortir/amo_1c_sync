@@ -23,7 +23,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=https"
-      - "traefik.http.routers.traefik.rule=Host(`usadba.rockmedia.dev`)"
+      - traefik.http.routers.traefik.rule=Host(`usadba.rockmedia.dev`) && Path(`/traefik`)
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -59,7 +59,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)"
+      - traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=letsEncrypt
     # ports:
