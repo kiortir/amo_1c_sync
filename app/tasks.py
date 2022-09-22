@@ -24,7 +24,7 @@ dramatiq.set_broker(rabbitmq_broker)
 
 amo_logger = setup_logger(name='amo', logfile='amo_logs.json', maxBytes=1e6, backupCount=3)
 hook_logger = setup_logger(
-    name='hook', json=True, json_ensure_ascii=False)
+    name='hook')
 
 
 # logzero.logfile("amo_logs.json", maxBytes=1e6, backupCount=3)
