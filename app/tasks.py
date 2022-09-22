@@ -14,7 +14,7 @@ from dramatiq.middleware import CurrentMessage
 from app.models import BoundHook, WebHook
 
 
-HOST = 'rabbitmq' if os.environ.get('IS_PROD', False) else 'localhost'
+HOST = os.environ.get('BROKER_HOST', 'localhost')
 
 print(HOST)
 
