@@ -60,7 +60,8 @@ services:
     volumes:
       - .:/app
     restart: always
-
+    environment:
+          BROKER_HOST: rabbitmq
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)
@@ -74,7 +75,8 @@ services:
     container_name: worker
     command: dramatiq app.tasks
     restart: always
-
+    environment:
+      BROKER_HOST: rabbitmq
     volumes:
       - ./amo_errors.json:/amo_errors.json
       - ./amo_hooks_data.json:/amo_hooks_data.json
