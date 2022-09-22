@@ -14,6 +14,8 @@ amocrm-api-client = {git = "https://github.com/iqtek/amocrm_api_client.git", rev
 gunicorn = "^20.1.0"
 pytest = "^7.1.3"
 httpx = "^0.23.0"
+python-json-logger = "^2.0.4"
+logzero = "^1.7.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.7.0"

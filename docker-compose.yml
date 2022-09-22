@@ -75,6 +75,9 @@ services:
     command: dramatiq app.tasks
     restart: always
 
+    volumes:
+      - ./amo_errors.json:/amo_errors.json
+      - ./amo_hooks_data.json:/amo_hooks_data.json
     depends_on:
       - application
       - rabbitmq

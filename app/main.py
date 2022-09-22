@@ -22,26 +22,27 @@ class Test:
         self.q = "q"
 
 @app.get("/")
-def read_root():
-    job = dispatch.send("test")
+def read_root(imitation_hook: WebHook):
+    job = dispatch.send(imitation_hook)
     return {"job": job}
 
 @app.post("/hook")
 def manage_webhook(hook_payload: WebHook):
-    hook_event, hook = hook_payload.target.event
-    new_hook = BoundHook(
-        id=hook.id,
-        status=LeadStatus.create_booking,
-        room='test',
-        start_booking_date=3,
-        end_booking_date=3,
-        summ_pay=600,
-        has_bonuscard=True,
-        name='michael',
-        phone='9953008454'
-    )
+    # hook_event, hook = hook_payload.target.event
+    # new_hook = BoundHook(
+    #     id=hook.id,
+    #     status=LeadStatus.create_booking,
+    #     room='test',
+    #     start_booking_date=3,
+    #     end_booking_date=3,
+    #     summ_pay=600,
+    #     has_bonuscard=True,
+    #     name='michael',
+    #     phone='9953008454'
+    # )
+    dispatch.send(hook_payload.dict())
     # print(new_hook.json())
-    return new_hook
+    return {'status': 'ok'}
 
 
 if __name__ == '__main__':

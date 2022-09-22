@@ -1,0 +1,71 @@
+{
+    "asctime": "2022-09-22 11:28:01,870",
+    "filename": "tasks.py",
+    "funcName": "dispatch",
+    "levelname": "INFO",
+    "levelno": 20,
+    "lineno": 44,
+    "module": "tasks",
+    "message": null,
+    "name": "hook",
+    "pathname": "/home/michael/projects/rockmedia/amo_1c_sync/./app/tasks.py",
+    "process": 30735,
+    "processName": "Process-2",
+    "threadName": "Thread-5",
+    "__root__": {
+        "leads": {
+            "status": {
+                "field": {
+                    "id": 25399013,
+                    "name": "Lead title",
+                    "old_status_id": 7039101,
+                    "status_id": 142,
+                    "price": "0",
+                    "responsible_user_id": 123123,
+                    "last_modified": 1413554372,
+                    "modified_user_id": 123123,
+                    "created_user_id": 123123,
+                    "date_create": 1413554349,
+                    "account_id": 7039099,
+                    "custom_fields": [
+                        {
+                            "id": "427183",
+                            "name": "Checkbox custom field",
+                            "values": [
+                                "1"
+                            ]
+                        },
+                        {
+                            "id": "427271",
+                            "name": "Date custom field",
+                            "values": [
+                                "1412380800"
+                            ]
+                        },
+                        {
+                            "id": "1069602",
+                            "name": "Checkbox custom field",
+                            "values": [
+                                "0"
+                            ]
+                        },
+                        {
+                            "id": "427661",
+                            "name": "Text custom field",
+                            "values": [
+                                "Валера"
+                            ]
+                        },
+                        {
+                            "id": "1075272",
+                            "name": "Date custom field",
+                            "values": [
+                                "1413331200"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
