@@ -28,6 +28,7 @@ def read_root(imitation_hook: WebHook):
 
 @app.post("/hook")
 def manage_webhook(hook_payload: WebHook):
+    print(hook_payload)
     # hook_event, hook = hook_payload.target.event
     # new_hook = BoundHook(
     #     id=hook.id,
