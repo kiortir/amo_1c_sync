@@ -1,60 +1,58 @@
 from __future__ import annotations
 from enum import Enum
-from typing import List, Dict
 
-from typing import List
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
-# from amocrm_api_client.models.lead import Lead
-
 
 class CustomField(BaseModel):
-    id: str
+    id:int
     name: str
-    values: List[str]
+    values: list[str]
 
-
-class DataField(BaseModel):
+class Field0(BaseModel):
     id: int
     name: str
-    old_status_id: int
     status_id: int
+    old_status_id: int
     price: str
-    responsible_user_id: int
+    responsible_user_id: str
     last_modified: int
     modified_user_id: int
     created_user_id: int
     date_create: int
+    created_at: Optional[int]
+    updated_at: Optional[int]
+
+    pipeline_id: Optional[int]
+    tags: Optional[dict]
     account_id: int
-    custom_fields: List[CustomField]
+    custom_fields: list[CustomField]
 
 
-class HookEvent(BaseModel):
-    field: DataField = Field(..., alias='0')
+class HookStatus(BaseModel):
+    field_0: Field0 = Field(..., alias='0')
 
 
-class HookTarget(BaseModel):
-    __root__: Dict[str, HookEvent]
+class Leads(BaseModel):
+    update: Optional[HookStatus] = None
+    delete: Optional[HookStatus] = None
+    status: Optional[HookStatus] = None
 
-    @property
-    def event(self):
-        return (key := list(self.__root__.keys())[0]),  self.__root__[key].field
+
+class _Links(BaseModel):
+    self: str
+
+
+class Account(BaseModel):
+    subdomain: str
+    id: str
+    _links: _Links
 
 
 class WebHook(BaseModel):
-    __root__: Dict[str, HookTarget]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, item):
-        print(self.__root__)
-        return list(self.__root__.values())[item]
-
-    @property
-    def target(self):
-        return list(self.__root__.values())[0]
+    leads: Leads
 
 
 class LeadStatus(str, Enum):
