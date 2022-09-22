@@ -7,8 +7,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # try:
-from .tasks import example 
-from .models import WebHook, BoundHook, LeadStatus
+from app.tasks import example, dispatch
+from app.models import WebHook, BoundHook, LeadStatus
 
 # except ModuleNotFoundError:
 #     from tasks import example
@@ -23,13 +23,8 @@ class Test:
 
 @app.get("/")
 def read_root():
-    job = example.send("test")
+    job = dispatch.send("test")
     return {"job": job}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
 
 @app.post("/hook")
 def manage_webhook(hook_payload: WebHook):
