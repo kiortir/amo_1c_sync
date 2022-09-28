@@ -1,13 +1,14 @@
 from typing import Union
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from querystring_parser import parser as qs_parser
 
 import os.path
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # try:
-from app.tasks import dispatch
+from app.tasks import dispatch, hook_logger
 from app.models import WebHook, BoundHook, LeadStatus
 
 # except ModuleNotFoundError:
@@ -27,8 +28,14 @@ def read_root(imitation_hook: WebHook):
     return {"job": job}
 
 @app.post("/hook")
-def manage_webhook(hook_payload: WebHook):
-    hook_event, hook = hook_payload.leads.fields
+async def manage_webhook(hook_payload: Request):
+    query = await hook_payload.body()
+    hook_logger.info(query)
+    data = qs_parser.parse(query, normalized=True)
+    hook_logger.info(data)
+
+    parsed_data = WebHook.parse_obj(data)
+    hook_event, hook = parsed_data.leads.fields
     new_hook = BoundHook(
         id=hook.id,
         status=LeadStatus.create_booking,
