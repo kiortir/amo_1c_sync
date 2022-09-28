@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # try:
-from app.tasks import example, dispatch
+from app.tasks import dispatch
 from app.models import WebHook, BoundHook, LeadStatus
 
 # except ModuleNotFoundError:
@@ -28,21 +28,19 @@ def read_root(imitation_hook: WebHook):
 
 @app.post("/hook")
 def manage_webhook(hook_payload: WebHook):
-    print(hook_payload)
-    # hook_event, hook = hook_payload.target.event
-    # new_hook = BoundHook(
-    #     id=hook.id,
-    #     status=LeadStatus.create_booking,
-    #     room='test',
-    #     start_booking_date=3,
-    #     end_booking_date=3,
-    #     summ_pay=600,
-    #     has_bonuscard=True,
-    #     name='michael',
-    #     phone='9953008454'
-    # )
-    dispatch.send(hook_payload.dict())
-    # print(new_hook.json())
+    hook_event, hook = hook_payload.leads.fields
+    new_hook = BoundHook(
+        id=hook.id,
+        status=LeadStatus.create_booking,
+        room='test',
+        start_booking_date=3,
+        end_booking_date=3,
+        summ_pay=600,
+        has_bonuscard=True,
+        name='michael',
+        phone='9953008454'
+    )
+    dispatch.send(new_hook.dict())
     return {'status': 'ok'}
 
 

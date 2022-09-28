@@ -7,9 +7,10 @@ from pydantic import BaseModel, Field
 
 
 class CustomField(BaseModel):
-    id:int
+    id: int
     name: str
     values: list[str]
+
 
 class Field0(BaseModel):
     id: int
@@ -39,6 +40,15 @@ class Leads(BaseModel):
     update: Optional[HookStatus] = None
     delete: Optional[HookStatus] = None
     status: Optional[HookStatus] = None
+
+    @property
+    def fields(self):
+        names = ['update', 'delete', 'status']
+
+        for name in names:
+            hook_status = getattr(self, name)
+            if hook_status is not None:
+                return name, hook_status.field_0
 
 
 class _Links(BaseModel):
