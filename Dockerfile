@@ -1,4 +1,4 @@
-FROM python:3.10 as python-base
+FROM python:3.9 as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files

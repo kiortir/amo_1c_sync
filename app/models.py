@@ -5,6 +5,23 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from amocrm.v2 import Lead as _Lead, custom_field,Contact as _Contact
+
+
+class Lead(_Lead):
+    sauna = custom_field.SelectCustomField("Баня")
+    advance_payment = custom_field.NumericCustomField("Сумма задатка")
+    booking_start_datetime = custom_field.DateTimeCustomField(
+        "Дата и время заезда")
+    booking_end_datetime = custom_field.DateTimeCustomField(
+        "Дата и время выезда")
+    bonus_card = custom_field.SelectCustomField("Бонусная карта")
+
+
+class Contact(_Contact):
+    phone = custom_field.TextCustomField("Телефон")
+
+
 
 class CustomField(BaseModel):
     id: int
