@@ -62,6 +62,7 @@ services:
     restart: always
     environment:
           BROKER_HOST: rabbitmq
+          REDIS_HOST: redis
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)
@@ -77,6 +78,7 @@ services:
     restart: always
     environment:
       BROKER_HOST: rabbitmq
+      REDIS_HOST: redis
       PYTHONUNBUFFERED: 0
     volumes:
       - ./amo_errors.json:/amo_errors.json

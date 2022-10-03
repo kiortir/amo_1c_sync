@@ -19,7 +19,7 @@ BASE_URL = os.environ.get('BASE_URL')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 AUTH_CODE = os.environ.get('AUTH_CODE')
 REDIRECT_URI = os.environ.get('REDIRECT_URI')
-REDIS_HOST = os.environ.get('REDIS_HOS', 'localhost')
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 
 # amo status
 
