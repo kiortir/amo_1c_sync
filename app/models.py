@@ -1,11 +1,13 @@
 from __future__ import annotations
+from datetime import datetime
 from enum import Enum
+from os import stat
 
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from amocrm.v2 import Lead as _Lead, custom_field,Contact as _Contact
+from amocrm.v2 import Lead as _Lead, custom_field, Contact as _Contact, Pipeline as _Pipeline
 
 
 class Lead(_Lead):
@@ -21,6 +23,8 @@ class Lead(_Lead):
 class Contact(_Contact):
     phone = custom_field.TextCustomField("Телефон")
 
+# class Pipeline(_Pipeline):
+#     statuses: S
 
 
 class CustomField(BaseModel):
@@ -54,7 +58,7 @@ class HookStatus(BaseModel):
 
 
 class Leads(BaseModel):
-    update: Optional[HookStatus] = None
+    update: list[Field0] = None
     delete: Optional[HookStatus] = None
     status: Optional[HookStatus] = None
 
@@ -82,20 +86,39 @@ class WebHook(BaseModel):
     leads: Leads
 
 
-class LeadStatus(str, Enum):
-    create_booking = 'create_booking'
-    delete_booking = 'delete_booking'
-    create_stay = 'create_stay'
-    delete_stay = 'delete_stay'
+def dateTimeEncoder(date: datetime):
+    return datetime.strftime(date, '%d.%m.Y %H:%M:%S')
 
 
 class BoundHook(BaseModel):
     id: int
-    status: LeadStatus
+    status: str
     room: str
-    start_booking_date: int
-    end_booking_date: int
+    start_booking_date: datetime
+    end_booking_date: datetime
     summ_pay: int
-    has_bonuscard: bool
+    bonus_card: str
     name: str
-    phone: str
+    phone: int
+
+    class Config:
+        json_encoders = {
+            datetime: dateTimeEncoder,
+        }
+
+def encodeBoundHook(data: BoundHook):
+    print(data)
+    return data.json()
+
+class BoundHookMessage(BaseModel):
+    pipe: int
+    data: BoundHook
+
+    @property
+    def hash(self):
+        return u''.join([str(value) for value in self.data.dict().values()])
+
+    class Config:
+        json_encoders = {
+            BoundHook: encodeBoundHook
+        }

@@ -20,6 +20,7 @@ querystring-parser = "^1.2.4"
 python-dotenv = "^0.21.0"
 amocrm-api = "^2.5.0"
 redis = "^4.3.4"
+ujson = "^5.5.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.7.0"
