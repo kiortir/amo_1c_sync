@@ -52,6 +52,7 @@ services:
 
     depends_on:
       - rabbitmq
+      - redis
     build:
        context: ./
     command: gunicorn app.main:app --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
@@ -86,6 +87,7 @@ services:
     depends_on:
       - application
       - rabbitmq
+      - redis
 
   redis:
       image: "redis:7.0.5"
