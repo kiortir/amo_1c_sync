@@ -9,11 +9,17 @@ import httpx
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from amocrm.v2 import Company, custom_field
-from app.models import Lead, Contact
+try:
+    from app.models import Lead, Contact
+    from app import amo_handler
+    from app.amo_handler import DEBUG, redis_client, STATUS_MAP, ERROR_STATUS
 
-from app import amo_handler
+except ModuleNotFoundError:
+    from models import Lead, Contact
+    import amo_handler
+    from amo_handler import DEBUG, redis_client, STATUS_MAP, ERROR_STATUS
 
-from app.amo_handler import DEBUG, redis_client, STATUS_MAP, ERROR_STATUS
+
 
 
 try:

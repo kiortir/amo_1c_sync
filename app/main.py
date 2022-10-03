@@ -1,7 +1,14 @@
 from amocrm_api_client.models.lead import UpdateLead
 from datetime import datetime
-from app.tasks import dispatch, hook_logger
-from app.models import BoundHook, Leads, WebHook, Lead
+try:
+    from app.tasks import dispatch, hook_logger
+    from app.models import BoundHook, Leads, WebHook, Lead
+    from app import amo_handler
+
+except ModuleNotFoundError:
+    from tasks import dispatch, hook_logger
+    from models import BoundHook, Leads, WebHook, Lead
+    import amo_handler
 from amocrm.v2 import Contact, Company, Pipeline, Status
 import os.path
 import sys
@@ -10,7 +17,6 @@ from typing import Union
 from fastapi import FastAPI, Request
 from querystring_parser import parser as qs_parser
 
-from app import amo_handler
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -29,6 +35,7 @@ async def manage_webhook(hook_payload: Request):
     data = qs_parser.parse(query, normalized=True)
 
     parsed_data = WebHook.parse_obj(data)
+    print(parsed_data)
     hook_event, hook = parsed_data.leads.fields
     new_hook = BoundHook(
         id=hook.id,
@@ -41,6 +48,7 @@ async def manage_webhook(hook_payload: Request):
         name='michael',
         phone='9953008454'
     )
+    print(new_hook)
     dispatch.send(data.id)
     return {'status': 'ok'}
 
