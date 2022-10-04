@@ -69,7 +69,8 @@ class Leads(BaseModel):
         for name in names:
             hook_status = getattr(self, name)
             if hook_status is not None:
-                return name, hook_status.field_0
+                if name == 'update':
+                    return hook_status[0].field_0
 
 
 class _Links(BaseModel):
