@@ -39,10 +39,9 @@ amo_logger = setup_logger(
 hook_logger = setup_logger(name='hook')
 
 
-def get_status(status_id: int):
-    for status_name, status_ids in STATUS_MAP.items():
-        if status_id in status_ids:
-            return status_name
+def get_status(previous_status_id: int, status_id: int):
+    for status in STATUSES:
+        status.match(previous_status_id, status_id)
 
 
 @dramatiq.actor

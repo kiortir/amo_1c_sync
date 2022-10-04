@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from os import stat
 
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +30,7 @@ class Contact(_Contact):
 class CustomField(BaseModel):
     id: int
     name: str
-    values: list[str]
+    values: Any
 
 
 class Field0(BaseModel):

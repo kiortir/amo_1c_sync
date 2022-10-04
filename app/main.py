@@ -35,21 +35,7 @@ async def manage_webhook(hook_payload: Request):
     data = qs_parser.parse(query, normalized=True)
     print(data)
     parsed_data = WebHook.parse_obj(data)
-    print(parsed_data)
-    hook_event, hook = parsed_data.leads.fields
-    new_hook = BoundHook(
-        id=hook.id,
-        status='create_booking',
-        room='test',
-        start_booking_date=3,
-        end_booking_date=3,
-        summ_pay=600,
-        has_bonuscard=True,
-        name='michael',
-        phone='9953008454'
-    )
-    print(new_hook)
-    dispatch.send(data.id)
+    dispatch.send(parsed_data.id)
     return {'status': 'ok'}
 
 
