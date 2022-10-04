@@ -20,8 +20,6 @@ except ModuleNotFoundError:
     from amo_handler import DEBUG, redis_client, ERROR_STATUS, STATUSES
 
 
-
-
 try:
     from app.models import BoundHook, BoundHookMessage
 except ImportError:
@@ -45,13 +43,13 @@ def get_status(previous_status_id: int, status_id: int):
 
 
 @dramatiq.actor
-def dispatch(lead_id: int):
+def dispatch(lead_id: int, previous_status=None):
     data: Lead = Lead.objects.get(lead_id)
 
     contact: Contact = next(data.contacts.__iter__())
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
-    status = get_status(data.status.id)
+    status = get_status(previous_status, data.status.id)
     if status is None:
         return
     py_data = BoundHook(

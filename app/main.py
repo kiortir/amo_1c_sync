@@ -35,7 +35,7 @@ async def manage_webhook(hook_payload: Request):
     data = qs_parser.parse(query, normalized=True)
     print(data)
     parsed_data = WebHook.parse_obj(data)
-    dispatch.send(parsed_data.id)
+    dispatch.send(parsed_data.leads.fields.id)
     return {'status': 'ok'}
 
 
