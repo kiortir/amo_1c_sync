@@ -37,7 +37,7 @@ class Field0(BaseModel):
     id: int
     name: str
     status_id: int
-    old_status_id: int
+    old_status_id: Optional[int]
     price: str
     responsible_user_id: str
     last_modified: int
@@ -50,7 +50,7 @@ class Field0(BaseModel):
     pipeline_id: Optional[int]
     tags: Optional[dict]
     account_id: int
-    custom_fields: list[CustomField]
+    custom_fields: Optional[list[CustomField]]
 
 
 class HookStatus(BaseModel):
