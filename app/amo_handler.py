@@ -28,8 +28,6 @@ def init_status(x): return set(int(status)
                                for status in (x or '0').split(';'))
 
 
-STATUS_MAP = defaultdict(set)
-
 ERROR_STATUS = {}
 
 
@@ -77,8 +75,8 @@ def fetch_statuses():
 
             status_categories = NAME_TO_STATUS.get(status.name)
             if status_categories is not None:
-                for status_category in status_categories:
-                    STATUS_MAP[status_category].add(status.id)
+                for status_class_function in status_categories:
+                    status_class_function(status.id)
 
 
 redis_client = redis.Redis(host=REDIS_HOST, port=6379)
@@ -106,4 +104,4 @@ tokens.default_token_manager(
 tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
 
 fetch_statuses()
-print(STATUS_MAP)
+print(CREATE_BOOKING)
