@@ -38,7 +38,7 @@ class StatusMatch:
         self.previous_status_set: set[int] = set()
 
     def match(self, previous_status, status):
-        return int(previous_status in self.previous_status_set) + int(status in self.status_set)
+        return int(previous_status in self.previous_status_set) + int(status in self.status_set) * 2
 
     def previous(self, status_id):
         self.previous_status_set.add(status_id)

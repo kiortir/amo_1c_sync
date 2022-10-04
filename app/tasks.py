@@ -38,8 +38,9 @@ hook_logger = setup_logger(name='hook')
 
 
 def get_status(previous_status_id: int, status_id: int):
-    for status in STATUSES:
-        status.match(previous_status_id, status_id)
+    match_list = [(status.match(previous_status_id, status_id),
+                   status.status_code) for status in STATUSES]
+    return max(match_list, default=None, key=lambda x: x[0])
 
 
 @dramatiq.actor
@@ -52,6 +53,7 @@ def dispatch(lead_id: int, previous_status=None):
     status = get_status(previous_status, data.status.id)
     if status is None:
         return
+    print(status)
     py_data = BoundHook(
         id=data.id,
         status=status,
