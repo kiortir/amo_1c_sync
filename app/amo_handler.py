@@ -32,24 +32,38 @@ STATUS_MAP = defaultdict(set)
 
 ERROR_STATUS = {}
 
-NAME_TO_STATUS = {
-    'Устная бронь': ('create_booking', 'delete_stay', 'pre__delete_booking'),
-    'Проживание': ('create_stay', 'pre__delete_stay'),
-    'Закрыто и не реализовано': ('delete_booking',),
-    'Не обработано': ('delete_stay', 'delete_booking'),
-    'Принимает решение': ('delete_stay', 'delete_booking'),
-    'Бронь Оплачена': ('delete_stay', 'pre__delete_booking'),
-}
 
 
 class StatusMatch:
-    def __init__(self):
+    def __init__(self, status_code: str):
+        self.status_code = status_code
         self.status_set: set[int] = set()
         self.previous_status_set: set[int] = set()
 
-    def match(self, status, previous_status):
-        pass
+    def match(self, previous_status, status):
+        return int(previous_status in self.previous_status_set) + int(status in self.status_set)
 
+    def previous(self, status_id):
+        self.previous_status_set.add(status_id)
+
+    def current(self, status_id):
+        self.status_set.add(status_id)
+
+CREATE_BOOKING = StatusMatch('create_booking')
+DELETE_BOOKING = StatusMatch('delete_booking')
+CREATE_STAY = StatusMatch('create_stay')
+DELETE_STAY = StatusMatch('delete_stay')
+DELETE_ALL = StatusMatch('delete_all')
+
+
+NAME_TO_STATUS = {
+    'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
+    'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
+    'Закрыто и не реализовано': (DELETE_ALL.current,),
+    'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
+    'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
+    'Бронь Оплачена': (DELETE_STAY.current, DELETE_BOOKING.previous),
+}
 
 
 def fetch_statuses():
