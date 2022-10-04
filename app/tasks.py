@@ -12,12 +12,12 @@ from amocrm.v2 import Company, custom_field
 try:
     from app.models import Lead, Contact
     from app import amo_handler
-    from app.amo_handler import DEBUG, redis_client, STATUS_MAP, ERROR_STATUS
+    from app.amo_handler import DEBUG, redis_client, ERROR_STATUS, STATUSES
 
 except ModuleNotFoundError:
     from models import Lead, Contact
     import amo_handler
-    from amo_handler import DEBUG, redis_client, STATUS_MAP, ERROR_STATUS
+    from amo_handler import DEBUG, redis_client, ERROR_STATUS, STATUSES
 
 
 
