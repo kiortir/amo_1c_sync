@@ -35,7 +35,8 @@ async def manage_webhook(hook_payload: Request):
     data = qs_parser.parse(query, normalized=True)
     print(data)
     parsed_data = WebHook.parse_obj(data)
-    dispatch.send(parsed_data.leads.fields.id)
+    data = parsed_data.leads.fields
+    dispatch.send(data.id, getattr(data, 'old_status_id'))
     return {'status': 'ok'}
 
 
