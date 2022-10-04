@@ -31,7 +31,6 @@ def init_status(x): return set(int(status)
 ERROR_STATUS = {}
 
 
-
 class StatusMatch:
     def __init__(self, status_code: str):
         self.status_code = status_code
@@ -47,12 +46,16 @@ class StatusMatch:
     def current(self, status_id):
         self.status_set.add(status_id)
 
+
 CREATE_BOOKING = StatusMatch('create_booking')
 DELETE_BOOKING = StatusMatch('delete_booking')
 CREATE_STAY = StatusMatch('create_stay')
 DELETE_STAY = StatusMatch('delete_stay')
 DELETE_ALL = StatusMatch('delete_all')
 
+
+STATUSES = [CREATE_BOOKING, DELETE_BOOKING,
+            CREATE_STAY, DELETE_STAY, DELETE_ALL]
 
 NAME_TO_STATUS = {
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
