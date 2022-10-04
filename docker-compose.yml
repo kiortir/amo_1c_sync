@@ -60,6 +60,8 @@ services:
     #     - 80:80
     volumes:
       - .:/app
+    env_file:
+      - sync.env
     restart: always
     environment:
           BROKER_HOST: rabbitmq
@@ -81,9 +83,8 @@ services:
       BROKER_HOST: rabbitmq
       REDIS_HOST: redis
       PYTHONUNBUFFERED: 0
-    volumes:
-      - ./amo_errors.json:/amo_errors.json
-      - ./amo_hooks_data.json:/amo_hooks_data.json
+    env_file:
+      - sync.env
     depends_on:
       - application
       - rabbitmq
