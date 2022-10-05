@@ -1,30 +1,15 @@
-from datetime import datetime
-from logzero import setup_logger
-from http.client import HTTPException
 import os
-import ujson
+from http.client import HTTPException
 
 import dramatiq
 import httpx
+import ujson
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
-from amocrm.v2 import Company, custom_field
-try:
-    from app.models import Lead, Contact
-    from app import amo_handler
-    from app.amo_handler import DEBUG, redis_client, ERROR_STATUS, StatusMatch
+from logzero import setup_logger
 
-except ModuleNotFoundError:
-    from models import Lead, Contact
-    import amo_handler
-    from amo_handler import DEBUG, redis_client, ERROR_STATUS, StatusMatch
-
-
-try:
-    from app.models import BoundHook, BoundHookMessage
-except ImportError:
-    from models import BoundHook, BoundHookMessage
-
+from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client
+from app.models import BoundHook, BoundHookMessage, Contact, Lead
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
 
@@ -37,11 +22,11 @@ amo_logger = setup_logger(
 hook_logger = setup_logger(name='hook')
 
 
-def get_status(previous_status_id: int, status_id: int):
-    match_list = [(status.match(previous_status_id, status_id),
-                   status.status_code) for status in StatusMatch.statuses]
-    max_match, match_status = max(match_list, default=(None, None), key=lambda x: x[0])
-    return match_status if max_match else None
+# def get_status(previous_status_id: int, status_id: int):
+#     match_list = [(status.match(previous_status_id, status_id),
+#                    status.status_code) for status in StatusMatch.statuses]
+#     max_match, match_status = max(match_list, default=(None, None), key=lambda x: x[0])
+#     return match_status if max_match else None
 
 
 @dramatiq.actor
@@ -51,10 +36,9 @@ def dispatch(lead_id: int, previous_status=None):
     contact: Contact = next(data.contacts.__iter__())
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
-    status = get_status(previous_status, data.status.id)
+    status = StatusMatch.get_status(previous_status, data.status.id)
     if status is None:
         return
-    hook_logger.warning(status)
     py_data = BoundHook(
         id=data.id,
         status=status,

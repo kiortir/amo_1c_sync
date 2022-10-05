@@ -1,13 +1,10 @@
-from __future__ import annotations
 from datetime import datetime
-from enum import Enum
-from os import stat
 
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from amocrm.v2 import Lead as _Lead, custom_field, Contact as _Contact, Pipeline as _Pipeline
+from amocrm.v2 import Lead as _Lead, custom_field, Contact as _Contact
 
 
 class Lead(_Lead):
@@ -22,9 +19,6 @@ class Lead(_Lead):
 
 class Contact(_Contact):
     phone = custom_field.TextCustomField("Телефон")
-
-# class Pipeline(_Pipeline):
-#     statuses: S
 
 
 class CustomField(BaseModel):
@@ -71,6 +65,7 @@ class Leads(BaseModel):
             if hook_status is not None:
                 if name == 'update':
                     return hook_status[0]
+                    
 
 
 class _Links(BaseModel):
@@ -88,7 +83,6 @@ class WebHook(BaseModel):
 
 
 def dateTimeEncoder(date: datetime):
-    print('DATETIME ENCODED')
     return datetime.strftime(date, '%d.%m.%Y %H:%M:%S')
 
 
@@ -102,9 +96,6 @@ class BoundHook(BaseModel):
     bonus_card: str
     name: str
     phone: int
-
-def encodeBoundHook(data: BoundHook):
-    return data.json()
 
 class BoundHookMessage(BaseModel):
     pipe: int

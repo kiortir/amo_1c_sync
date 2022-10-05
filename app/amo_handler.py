@@ -1,7 +1,4 @@
-import asyncio
-from collections import defaultdict
 import os
-from typing import Union
 from typing_extensions import Self
 from amocrm.v2 import tokens, Pipeline
 import redis
@@ -22,18 +19,11 @@ AUTH_CODE = os.environ.get('AUTH_CODE')
 REDIRECT_URI = os.environ.get('REDIRECT_URI')
 REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 
-# amo status
-
-
-def init_status(x): return set(int(status)
-                               for status in (x or '0').split(';'))
-
-
 ERROR_STATUS = {}
 
 
 class StatusMatch:
-    statuses = []
+    statuses: list['StatusMatch'] = []
 
     def __new__(cls: type[Self], *args, **kwargs) -> Self:
         instance = super().__new__(cls)
@@ -59,6 +49,18 @@ class StatusMatch:
             else: return 0
         
         return total_match
+
+    @classmethod
+    def get_status(cls, previous_status_id: int, status_id: int):
+        max_match_value = 0
+        max_match_status_code = None
+        for status in cls.statuses:
+            match_value = status.match(previous_status_id, status_id)
+            if match_value > max_match_value:
+                max_match_value = match_value
+                max_match_status_code = status.status_code
+                
+        return max_match_status_code if max_match_value else None
 
 
 
@@ -120,10 +122,9 @@ tokens.default_token_manager(
     subdomain='usadbavip',
     redirect_url=REDIRECT_URI,
     storage=tokens.RedisTokensStorage(
-        redis_client),  # by default FileTokensStorage
+        redis_client)
 )
 
 tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
 
 fetch_statuses()
-print([status.status_code for status in StatusMatch.statuses])
