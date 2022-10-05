@@ -1,6 +1,7 @@
 import os
 from typing_extensions import Self
 from amocrm.v2 import tokens, Pipeline
+import httpx
 import redis
 
 
@@ -22,6 +23,9 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 ERROR_STATUS = {}
 
 ENDPOINT = os.environ.get('ENDPOINT')
+request_client = httpx.Client()
+def send_request(data):
+    request_client.post(ENDPOINT, json=data)
 
 class StatusMatch:
     statuses: list['StatusMatch'] = []

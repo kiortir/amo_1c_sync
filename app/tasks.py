@@ -8,7 +8,7 @@ from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
 
-from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT
+from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
@@ -74,7 +74,7 @@ def sendTo1c(data):
         setErrorStatus.send(data["data"]["id"], data["pipe"])
         raise HTTPException
 
-    response = httpx.post(ENDPOINT, json=data["data"])
+    response = send_request(data["data"])
     if response.status_code != 200:
         raise HTTPException
 
