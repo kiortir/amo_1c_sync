@@ -2,6 +2,7 @@ import asyncio
 from collections import defaultdict
 import os
 from typing import Union
+from typing_extensions import Self
 from amocrm.v2 import tokens, Pipeline
 import redis
 
@@ -32,13 +33,34 @@ ERROR_STATUS = {}
 
 
 class StatusMatch:
+    statuses = []
+
+    def __new__(cls: type[Self], *args, **kwargs) -> Self:
+        instance = super().__new__(cls)
+        cls.statuses.append(instance)
+        return instance
+
     def __init__(self, status_code: str):
         self.status_code = status_code
         self.status_set: set[int] = set()
         self.previous_status_set: set[int] = set()
 
     def match(self, previous_status, status):
-        return int(previous_status in self.previous_status_set) + int(status in self.status_set) * 2
+        total_match = 0
+
+        current_match = status in self.status_set
+        if not current_match:
+            return total_match
+        total_match += 2
+        if len(self.previous_status_set):
+            previous_match = previous_status in self.previous_status_set
+            if previous_match:
+                total_match += 1
+            else: return 0
+        
+        return total_match
+
+
 
     def previous(self, status_id):
         self.previous_status_set.add(status_id)
@@ -54,16 +76,13 @@ DELETE_STAY = StatusMatch('delete_stay')
 DELETE_ALL = StatusMatch('delete_all')
 
 
-STATUSES = [CREATE_BOOKING, DELETE_BOOKING,
-            CREATE_STAY, DELETE_STAY, DELETE_ALL]
-
 NAME_TO_STATUS = {
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
     'Закрыто и не реализовано': (DELETE_ALL.current,),
     'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
     'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
-    'Бронь Оплачена': (DELETE_STAY.current, DELETE_BOOKING.previous),
+    'Бронь оплачена': (DELETE_STAY.current, DELETE_BOOKING.previous),
 }
 
 
@@ -107,4 +126,4 @@ tokens.default_token_manager(
 tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
 
 fetch_statuses()
-print(CREATE_BOOKING)
+print([status.status_code for status in StatusMatch.statuses])

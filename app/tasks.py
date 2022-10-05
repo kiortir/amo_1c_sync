@@ -12,12 +12,12 @@ from amocrm.v2 import Company, custom_field
 try:
     from app.models import Lead, Contact
     from app import amo_handler
-    from app.amo_handler import DEBUG, redis_client, ERROR_STATUS, STATUSES
+    from app.amo_handler import DEBUG, redis_client, ERROR_STATUS, StatusMatch
 
 except ModuleNotFoundError:
     from models import Lead, Contact
     import amo_handler
-    from amo_handler import DEBUG, redis_client, ERROR_STATUS, STATUSES
+    from amo_handler import DEBUG, redis_client, ERROR_STATUS, StatusMatch
 
 
 try:
@@ -39,8 +39,9 @@ hook_logger = setup_logger(name='hook')
 
 def get_status(previous_status_id: int, status_id: int):
     match_list = [(status.match(previous_status_id, status_id),
-                   status.status_code) for status in STATUSES]
-    return max(match_list, default=None, key=lambda x: x[0])
+                   status.status_code) for status in StatusMatch.statuses]
+    max_match, match_status = max(match_list, default=(None, None), key=lambda x: x[0])
+    return match_status if max_match else None
 
 
 @dramatiq.actor
@@ -53,7 +54,7 @@ def dispatch(lead_id: int, previous_status=None):
     status = get_status(previous_status, data.status.id)
     if status is None:
         return
-    print(status)
+    hook_logger.warning(status)
     py_data = BoundHook(
         id=data.id,
         status=status,
@@ -74,11 +75,16 @@ def dispatch(lead_id: int, previous_status=None):
 
     if hash_key != cached_key or DEBUG:
         sendTo1c.send(new_data.json())
-        redis_client.set(hash_lookup, hash_key, ex=900)
+        redis_client.set(hash_lookup, hash_key, ex=86400)
+
+
+ENDPOINT = 'https://webhook.site/f1dedd2e-7667-44a4-9815-3a140d2f8cee'
 
 
 @dramatiq.actor(max_retries=3)
 def sendTo1c(data):
+    hook_logger.info(data)
+
     data = ujson.loads(data)
     hook_logger.info(data)
     message = CurrentMessage.get_current_message()
@@ -87,7 +93,7 @@ def sendTo1c(data):
         setErrorStatus.send(data["data"]["id"], data["pipe"])
         raise HTTPException
 
-    response = httpx.post('http://localhost:8888/endpoint', json=data)
+    response = httpx.post(ENDPOINT, json=data["data"])
     if response.status_code != 200:
         raise HTTPException
 

@@ -88,7 +88,8 @@ class WebHook(BaseModel):
 
 
 def dateTimeEncoder(date: datetime):
-    return datetime.strftime(date, '%d.%m.Y %H:%M:%S')
+    print('DATETIME ENCODED')
+    return datetime.strftime(date, '%d.%m.%Y %H:%M:%S')
 
 
 class BoundHook(BaseModel):
@@ -102,13 +103,7 @@ class BoundHook(BaseModel):
     name: str
     phone: int
 
-    class Config:
-        json_encoders = {
-            datetime: dateTimeEncoder,
-        }
-
 def encodeBoundHook(data: BoundHook):
-    print(data)
     return data.json()
 
 class BoundHookMessage(BaseModel):
@@ -121,5 +116,5 @@ class BoundHookMessage(BaseModel):
 
     class Config:
         json_encoders = {
-            BoundHook: encodeBoundHook
+            datetime: dateTimeEncoder,
         }
