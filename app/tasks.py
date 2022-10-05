@@ -72,8 +72,7 @@ def dispatch(lead_id: int, previous_status=None):
     cached_key = redis_client.get(hash_lookup)
     if cached_key is not None:
         cached_key = cached_key.decode('utf-8')
-
-    if hash_key != cached_key or DEBUG:
+    if hash_key != cached_key:
         sendTo1c.send(new_data.json())
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
@@ -84,9 +83,7 @@ ENDPOINT = 'https://webhook.site/f1dedd2e-7667-44a4-9815-3a140d2f8cee'
 @dramatiq.actor(max_retries=3)
 def sendTo1c(data):
     hook_logger.info(data)
-
     data = ujson.loads(data)
-    hook_logger.info(data)
     message = CurrentMessage.get_current_message()
     retries = message.options.get('retries', 0)
     if retries == 3:
