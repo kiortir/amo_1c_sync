@@ -8,7 +8,7 @@ from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
 
-from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client
+from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
@@ -61,7 +61,7 @@ def dispatch(lead_id: int, previous_status=None):
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
-ENDPOINT = 'https://webhook.site/f1dedd2e-7667-44a4-9815-3a140d2f8cee'
+# ENDPOINT = 'https://webhook.site/f1dedd2e-7667-44a4-9815-3a140d2f8cee'
 
 
 @dramatiq.actor(max_retries=3)

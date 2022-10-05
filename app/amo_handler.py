@@ -21,6 +21,7 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 
 ERROR_STATUS = {}
 
+ENDPOINT = os.environ.get('ENDPOINT')
 
 class StatusMatch:
     statuses: list['StatusMatch'] = []
@@ -59,7 +60,7 @@ class StatusMatch:
             if match_value > max_match_value:
                 max_match_value = match_value
                 max_match_status_code = status.status_code
-                
+
         return max_match_status_code if max_match_value else None
 
 
@@ -106,15 +107,15 @@ def fetch_statuses():
 redis_client = redis.Redis(host=REDIS_HOST, port=6379)
 
 
-settings = {
-    "backup_file_path": "./tokens",
-    "encryption_key": ENCRYPTION_KEY,
-    "integration_id": INTEGRATION_ID,
-    "secret_key": SECRET_KEY,
-    "auth_code": AUTH_CODE,
-    "base_url": BASE_URL,
-    "redirect_uri": REDIRECT_URI,
-}
+# settings = {
+#     "backup_file_path": "./tokens",
+#     "encryption_key": ENCRYPTION_KEY,
+#     "integration_id": INTEGRATION_ID,
+#     "secret_key": SECRET_KEY,
+#     "auth_code": AUTH_CODE,
+#     "base_url": BASE_URL,
+#     "redirect_uri": REDIRECT_URI,
+# }
 
 tokens.default_token_manager(
     client_id=INTEGRATION_ID,
