@@ -25,6 +25,7 @@ ERROR_STATUS = {}
 ENDPOINT = os.environ.get('ENDPOINT')
 request_client = httpx.Client()
 def send_request(data):
+    print(ENDPOINT)
     return request_client.post(ENDPOINT, json=data)
 
 class StatusMatch:
