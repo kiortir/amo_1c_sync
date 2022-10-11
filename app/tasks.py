@@ -39,6 +39,7 @@ def dispatch(lead_id: int, previous_status=None):
     status = StatusMatch.get_status(previous_status, data.status.id)
     if status is None:
         return
+    hook_logger.warning(contact, contact.phone)
     py_data = BoundHook(
         id=data.id,
         status=status,
