@@ -92,13 +92,13 @@ def dateTimeEncoder(date: datetime):
 class BoundHook(BaseModel):
     id: int
     status: str
-    room: str
+    room: Optional[str]
     start_booking_date: datetime
     end_booking_date: datetime
     summ_pay: int
-    bonus_card: str
-    name: str
-    phone: int
+    bonus_card: Optional[str]
+    name: Optional[str]
+    phone: Optional[int]
 
 
 class BoundHookMessage(BaseModel):

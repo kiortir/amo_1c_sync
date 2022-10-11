@@ -33,9 +33,15 @@ hook_logger = setup_logger(name='hook')
 def dispatch(lead_id: int, previous_status=None):
     data: Lead = Lead.objects.get(lead_id)
 
-    contact: Contact = next(data.contacts.__iter__())
+    try:
+        contact: Contact = next(data.contacts.__iter__())
+        phone = int(''.join([s for s in contact.phone if s.isdigit()]))
+        name = contact.name
+    except StopIteration:
+        contact = None
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
+
     status = StatusMatch.get_status(previous_status, data.status.id)
     if status is None:
         return
@@ -43,13 +49,13 @@ def dispatch(lead_id: int, previous_status=None):
     py_data = BoundHook(
         id=data.id,
         status=status,
-        room=data.sauna.value,
+        room=getattr(data.sauna, 'value'),
         start_booking_date=data.booking_start_datetime,
         end_booking_date=data.booking_end_datetime,
         summ_pay=data.advance_payment,
-        bonus_card=data.bonus_card.value,
-        name=contact.name,
-        phone=int(''.join([s for s in contact.phone if s.isdigit()])),
+        bonus_card=getattr(data.bonus_card, 'value'),
+        name=name,
+        phone=phone
     )
     new_data = BoundHookMessage(pipe=data.pipeline.id, data=py_data)
     hash_key = new_data.hash
