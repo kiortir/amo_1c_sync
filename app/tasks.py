@@ -45,15 +45,14 @@ def dispatch(lead_id: int, previous_status=None):
     status = StatusMatch.get_status(previous_status, data.status.id)
     if status is None:
         return
-    hook_logger.warning(contact.phone)
     py_data = BoundHook(
         id=data.id,
         status=status,
-        room=getattr(data.sauna, 'value'),
+        room=getattr(data.sauna, 'value', None),
         start_booking_date=data.booking_start_datetime,
         end_booking_date=data.booking_end_datetime,
         summ_pay=data.advance_payment,
-        bonus_card=getattr(data.bonus_card, 'value'),
+        bonus_card=getattr(data.bonus_card, 'value', None),
         name=name,
         phone=phone
     )
