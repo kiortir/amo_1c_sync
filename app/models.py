@@ -53,6 +53,8 @@ class HookStatus(BaseModel):
 
 class Leads(BaseModel):
     update: list[Field0] = None
+    add: list[Field0] = None
+
     delete: Optional[HookStatus] = None
     status: Optional[HookStatus] = None
 
@@ -63,11 +65,10 @@ class Leads(BaseModel):
         for name in names:
             hook_status = getattr(self, name)
             if hook_status is not None:
-                if name == 'update':
+                if name in {'update', 'add'}:
                     return hook_status[0]
                 if name == 'status':
                     return hook_status.field_0
-                    
 
 
 class _Links(BaseModel):
@@ -98,6 +99,7 @@ class BoundHook(BaseModel):
     bonus_card: str
     name: str
     phone: int
+
 
 class BoundHookMessage(BaseModel):
     pipe: int
