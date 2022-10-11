@@ -65,6 +65,8 @@ class Leads(BaseModel):
             if hook_status is not None:
                 if name == 'update':
                     return hook_status[0]
+                if name == 'status':
+                    return hook_status.field_0
                     
 
 
