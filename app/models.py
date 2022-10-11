@@ -60,7 +60,7 @@ class Leads(BaseModel):
 
     @property
     def fields(self):
-        names = ['update', 'delete', 'status']
+        names = ['update', 'delete', 'status', 'add']
 
         for name in names:
             hook_status = getattr(self, name)
