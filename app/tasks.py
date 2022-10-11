@@ -38,7 +38,7 @@ def dispatch(lead_id: int, previous_status=None):
         phone = int(''.join([s for s in contact.phone if s.isdigit()]))
         name = contact.name
     except StopIteration:
-        contact = None
+        phone = name = None
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
 
