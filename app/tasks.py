@@ -49,7 +49,7 @@ def dispatch(lead_id: int, previous_status=None):
         summ_pay=data.advance_payment,
         bonus_card=data.bonus_card.value,
         name=contact.name,
-        phone=contact.phone
+        phone=int(''.join([s for s in contact.phone if s.isdigit()])),
     )
     new_data = BoundHookMessage(pipe=data.pipeline.id, data=py_data)
     hash_key = new_data.hash
