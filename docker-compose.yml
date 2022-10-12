@@ -97,5 +97,5 @@ services:
       - "6379:6379"
 
       volumes:
-        - $PWD/redis-data:/var/lib/redis
-        - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+        - .services/redis/redis-data:/var/lib/redis
+        - .services/redis/redis.conf:/usr/local/etc/redis/redis.conf

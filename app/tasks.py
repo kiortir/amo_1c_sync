@@ -7,6 +7,7 @@ import ujson
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
+from amocrm.v2.exceptions import NotFound
 
 from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
@@ -31,11 +32,15 @@ hook_logger = setup_logger(name='hook')
 
 @dramatiq.actor
 def dispatch(lead_id: int, previous_status=None):
-    data: Lead = Lead.objects.get(lead_id)
+    try:
+        data: Lead = Lead.objects.get(lead_id)
+    except NotFound:
+        return
 
     try:
         contact: Contact = next(data.contacts.__iter__())
-        phone = int(''.join([s for s in contact.phone if s.isdigit()]))
+        phone_str = ''.join([s for s in contact.phone if s.isdigit()])
+        phone = int(phone_str) if phone_str else None
         name = contact.name
     except StopIteration:
         phone = name = None
