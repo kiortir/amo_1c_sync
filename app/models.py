@@ -93,9 +93,9 @@ class BoundHook(BaseModel):
     id: int
     status: str
     room: Optional[str]
-    start_booking_date: datetime
-    end_booking_date: datetime
-    summ_pay: int
+    start_booking_date: Optional[datetime]
+    end_booking_date: Optional[datetime]
+    summ_pay: Optional[int]
     bonus_card: Optional[str]
     name: Optional[str]
     phone: Optional[int]
