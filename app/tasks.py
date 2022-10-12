@@ -87,7 +87,7 @@ def sendTo1c(data):
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
     response = send_request(data["data"])
     try:
-        hook_logger.info(response.json())
+        hook_logger.info(response.text)
     except Exception:
         pass
     if response.status_code != 200:
