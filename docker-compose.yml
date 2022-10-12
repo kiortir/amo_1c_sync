@@ -64,9 +64,9 @@ services:
       - sync.env
     restart: always
     environment:
+          IS_ROOT: 'True'
           BROKER_HOST: rabbitmq
           REDIS_HOST: redis
-          IS_ROOT: True
     labels:
       - "traefik.enable=true"
       - traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)
