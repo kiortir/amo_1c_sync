@@ -84,8 +84,12 @@ def sendTo1c(data):
     if retries == 3:
         setErrorStatus.send(data["data"]["id"], data["pipe"])
         raise HTTPException
-
+    hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
     response = send_request(data["data"])
+    try:
+        hook_logger.info(response.json())
+    except Exception:
+        pass
     if response.status_code != 200:
         raise HTTPException
 
@@ -93,7 +97,6 @@ def sendTo1c(data):
 @dramatiq.actor(max_retries=2)
 def setErrorStatus(lead_id: int, pipeline_id: int):
     new_status = ERROR_STATUS.get(pipeline_id)
-    hook_logger.info(new_status)
     hook_logger.info(f'Ошибка брони, {lead_id=}')
     if new_status is not None:
         Lead.objects.update(
