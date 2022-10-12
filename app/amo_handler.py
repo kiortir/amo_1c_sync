@@ -1,4 +1,5 @@
 import os
+from pickle import FALSE
 from typing_extensions import Self
 from amocrm.v2 import tokens, Pipeline
 import httpx
@@ -84,6 +85,8 @@ DELETE_STAY = StatusMatch('delete_stay')
 DELETE_ALL = StatusMatch('delete_all')
 
 
+
+
 NAME_TO_STATUS = {
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
@@ -131,6 +134,9 @@ tokens.default_token_manager(
         redis_client)
 )
 
-tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
+IS_ROOT = os.environ.get('IS_ROOT', False) == 'True'
+
+if IS_ROOT:
+    tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
 
 fetch_statuses()
