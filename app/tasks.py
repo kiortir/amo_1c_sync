@@ -1,5 +1,6 @@
 import os
 from http.client import HTTPException
+from typing import Tuple
 
 import dramatiq
 import httpx
@@ -7,10 +8,14 @@ import ujson
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
-from amocrm.v2.exceptions import NotFound
+from app.v2.exceptions import NotFound, UnAuthorizedException
 
-from app.amo_handler import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
+
+import app.settings as SETTINGS
+from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
+from app.v2 import Company
+from app.tokens import storage
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
 
@@ -72,9 +77,6 @@ def dispatch(lead_id: int, previous_status=None):
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
-# ENDPOINT = 'https://webhook.site/f1dedd2e-7667-44a4-9815-3a140d2f8cee'
-
-
 @dramatiq.actor(max_retries=3)
 def sendTo1c(data):
     hook_logger.info(data)
@@ -106,7 +108,60 @@ def setErrorStatus(lead_id: int, pipeline_id: int):
             })
 
 
+def init_tokens(skip_error=False):
+    try:
+        info = list(Company.objects.all())
+        refresh_tokens.send()
+    except UnAuthorizedException:
+        data = {
+            "grant_type": "authorization_code",
+            "code": SETTINGS.AUTH_CODE,
+            "redirect_uri": SETTINGS.REDIRECT_URI,
+            "client_id": SETTINGS.INTEGRATION_ID,
+            "client_secret": SETTINGS.SECRET_KEY,
+        }
+        try:
+            response = httpx.post(
+                "https://{}.amocrm.ru/oauth2/access_token".format(SETTINGS.SUBDOMAIN), json=data)
+        except httpx.exceptions.RequestException:
+            ...
+        else:
+            if response.status_code != 200 and not skip_error:
+                raise Exception(response.json()["hint"])
+            if response.status_code != 200 and skip_error:
+                return
+            response = response.json()
+            storage.save_tokens(
+                response["access_token"], response["refresh_token"])
+            refresh_tokens.send_with_options(delay=720000)
+
+
+def _get_new_tokens() -> Tuple[str, str]:
+    refresh_token = storage.get_refresh_token()
+    if not refresh_token:
+        raise ValueError()
+    body = {
+        "client_id": SETTINGS.INTEGRATION_ID,
+        "client_secret": SETTINGS.SECRET_KEY,
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+        "redirect_uri": SETTINGS.REDIRECT_URI,
+    }
+    response = httpx.post(
+        "https://{}.amocrm.ru/oauth2/access_token".format(SETTINGS.SUBDOMAIN), json=body)
+    if response.status_code == 200:
+        data = response.json()
+        return data["access_token"], data["refresh_token"]
+    raise EnvironmentError(
+        "Can't refresh token {}".format(response.json()))
+
 @dramatiq.actor
 def refresh_tokens():
     hook_logger.info('Обновляем токены')
-    
+    token, refresh_token = _get_new_tokens()
+    storage.save_tokens(token, refresh_token)
+    refresh_tokens.send_with_options(delay=720000)
+
+
+if SETTINGS.IS_ROOT or SETTINGS.DEBUG:
+    init_tokens()

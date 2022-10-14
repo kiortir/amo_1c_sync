@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from amocrm.v2 import Lead as _Lead, custom_field, Contact as _Contact
+from app.v2 import Lead as _Lead, custom_field, Contact as _Contact
 
 
 class Lead(_Lead):
