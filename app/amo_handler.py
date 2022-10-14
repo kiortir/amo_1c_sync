@@ -2,10 +2,9 @@ import os
 
 import httpx
 import redis
-from amocrm.v2 import Pipeline
+from amocrm.v2 import Pipeline, tokens
 from typing_extensions import Self
 
-from . import tokens
 
 DEBUG = os.environ.get('DEBUG', 'TRUE') == 'TRUE'
 
