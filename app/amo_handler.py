@@ -1,10 +1,11 @@
 import os
-from pickle import FALSE
-from typing_extensions import Self
-from amocrm.v2 import tokens, Pipeline
+
 import httpx
 import redis
+from amocrm.v2 import Pipeline
+from typing_extensions import Self
 
+from . import tokens
 
 DEBUG = os.environ.get('DEBUG', 'TRUE') == 'TRUE'
 
@@ -25,9 +26,12 @@ ERROR_STATUS = {}
 
 ENDPOINT = os.environ.get('ENDPOINT')
 request_client = httpx.Client()
+
+
 def send_request(data):
-    print(ENDPOINT)
+    # print(data)
     return request_client.post(ENDPOINT, json=data)
+
 
 class StatusMatch:
     statuses: list['StatusMatch'] = []
@@ -53,8 +57,9 @@ class StatusMatch:
             previous_match = previous_status in self.previous_status_set
             if previous_match:
                 total_match += 1
-            else: return 0
-        
+            else:
+                return 0
+
         return total_match
 
     @classmethod
@@ -69,8 +74,6 @@ class StatusMatch:
 
         return max_match_status_code if max_match_value else None
 
-
-
     def previous(self, status_id):
         self.previous_status_set.add(status_id)
 
@@ -83,8 +86,6 @@ DELETE_BOOKING = StatusMatch('delete_booking')
 CREATE_STAY = StatusMatch('create_stay')
 DELETE_STAY = StatusMatch('delete_stay')
 DELETE_ALL = StatusMatch('delete_all')
-
-
 
 
 NAME_TO_STATUS = {
@@ -125,18 +126,18 @@ redis_client = redis.Redis(host=REDIS_HOST, port=6379)
 #     "redirect_uri": REDIRECT_URI,
 # }
 
-tokens.default_token_manager(
-    client_id=INTEGRATION_ID,
-    client_secret=SECRET_KEY,
-    subdomain='usadbavip',
-    redirect_url=REDIRECT_URI,
-    storage=tokens.RedisTokensStorage(
-        redis_client)
-)
 
 IS_ROOT = os.environ.get('IS_ROOT', False) == 'True'
 
 if IS_ROOT:
+    tokens.default_token_manager(
+        client_id=INTEGRATION_ID,
+        client_secret=SECRET_KEY,
+        subdomain='usadbavip',
+        redirect_url=REDIRECT_URI,
+        storage=tokens.RedisTokensStorage(
+            redis_client, -1)
+    )
     tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
 
 fetch_statuses()

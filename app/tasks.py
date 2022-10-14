@@ -104,3 +104,9 @@ def setErrorStatus(lead_id: int, pipeline_id: int):
             {
                 "status_id": new_status
             })
+
+
+@dramatiq.actor
+def refresh_tokens():
+    hook_logger.info('Обновляем токены')
+    
