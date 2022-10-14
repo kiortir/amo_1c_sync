@@ -112,7 +112,7 @@ def init_tokens(skip_error=False):
     try:
         info = list(Company.objects.all())
         refresh_tokens.send()
-    except UnAuthorizedException:
+    except (UnAuthorizedException, TypeError):
         data = {
             "grant_type": "authorization_code",
             "code": SETTINGS.AUTH_CODE,
