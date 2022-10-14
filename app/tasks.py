@@ -14,7 +14,7 @@ from app.v2.exceptions import NotFound, UnAuthorizedException
 import app.settings as SETTINGS
 from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
-from app.v2 import Company
+from app.v2 import Company, Pipeline
 from app.tokens import storage
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
@@ -133,7 +133,22 @@ def init_tokens(skip_error=False):
             response = response.json()
             storage.save_tokens(
                 response["access_token"], response["refresh_token"])
-            refresh_tokens.send_with_options(delay=720000)
+            refresh_tokens.send_with_options(delay=7200000)
+
+
+def fetch_statuses():
+    pipelines = Pipeline.objects.all()
+    for pipeline in pipelines:
+        statuses = pipeline.statuses
+        for status in statuses:
+            if status.name == 'Ошибка брони':
+                ERROR_STATUS[pipeline.id] = status.id
+                continue
+
+            status_categories = SETTINGS.NAME_TO_STATUS.get(status.name)
+            if status_categories is not None:
+                for status_class_function in status_categories:
+                    status_class_function(status.id)
 
 
 def _get_new_tokens() -> Tuple[str, str]:
@@ -155,6 +170,7 @@ def _get_new_tokens() -> Tuple[str, str]:
     raise EnvironmentError(
         "Can't refresh token {}".format(response.json()))
 
+
 @dramatiq.actor
 def refresh_tokens():
     hook_logger.info('Обновляем токены')
@@ -165,3 +181,5 @@ def refresh_tokens():
 
 if SETTINGS.IS_ROOT or SETTINGS.DEBUG:
     init_tokens()
+else:
+    fetch_statuses()
