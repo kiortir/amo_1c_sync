@@ -117,13 +117,21 @@ def sendTo1c(data, endpoint):
 
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
         response.text, 'получил непонятный ответ на запрос {status}')
-    Note.objects.create({
+    note_data = {
+        "entity_type": 'leads',
         "entity_id": lead_id,
         "note_type": "service_message",
         "params": {
+            "service": "1С коннектор",
             "text": note_text
         }
-    },)
+    }
+    setNote.send(note_data)
+
+
+@dramatiq.actor
+def setNote(data):
+    Note.objects.create(data)
 
 
 @dramatiq.actor(max_retries=2)
