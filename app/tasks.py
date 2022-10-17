@@ -116,7 +116,7 @@ def sendTo1c(data, endpoint):
         setErrorStatus.send(lead_id, data["pipe"])
 
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
-        response.text, 'получил непонятный ответ на запрос {status}')
+        response.text, f'получил непонятный ответ на запрос {status}')
     note_data = {
         "note_type": "service_message",
         "params": {
