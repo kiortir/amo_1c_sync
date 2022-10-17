@@ -1,8 +1,7 @@
 from app.v2.entity import lead
-from app.v2.interaction import GenericInteraction
 import os
 from http.client import HTTPException
-from typing import Generic, Tuple, Union
+from typing import Tuple, Union
 
 import dramatiq
 import httpx
@@ -15,7 +14,7 @@ from app.v2.exceptions import NotFound, UnAuthorizedException
 
 import app.settings as SETTINGS
 from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request, STATUS_TO_DESCRIPTION_MAP
-from app.models import BoundHook, BoundHookMessage, Contact, Lead
+from app.models import BoundHook, BoundHookMessage, Contact, Lead, NoteInteraction
 from app.v2 import Company, Pipeline
 from app.tokens import storage
 
@@ -130,7 +129,7 @@ def sendTo1c(data, endpoint):
 
 @dramatiq.actor(max_retries=2)
 def setNote(data, lead_id):
-    interaction = GenericInteraction(path=f'leads/{lead_id}/notes')
+    interaction = NoteInteraction(path=f'leads/{lead_id}/notes')
     interaction.create(data)
 
 
