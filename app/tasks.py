@@ -12,9 +12,10 @@ from app.v2.exceptions import NotFound, UnAuthorizedException
 
 
 import app.settings as SETTINGS
-from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request
+from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request, STATUS_TO_DESCRIPTION_MAP
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
 from app.v2 import Company, Pipeline
+from app.v2.entity.note import _Note as Note
 from app.tokens import storage
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
@@ -97,8 +98,9 @@ def sendTo1c(data, endpoint):
     data = ujson.loads(data)
     message = CurrentMessage.get_current_message()
     retries = message.options.get('retries', 0)
+    lead_id = data["data"]["id"]
     if retries == 3:
-        setErrorStatus.send(data["data"]["id"], data["pipe"])
+        setErrorStatus.send(lead_id, data["pipe"])
         raise HTTPException
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
     response = send_request(data["data"], endpoint or ENDPOINT)
@@ -108,6 +110,20 @@ def sendTo1c(data, endpoint):
         pass
     if response.status_code != 200:
         raise HTTPException
+    status = data["data"]["status"]
+    response_status = response.text
+    if response_status in {'error', 'booking_error'}:
+        setErrorStatus.send(lead_id, data["pipe"])
+
+    note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
+        response.text, 'получил непонятный ответ на запрос {status}')
+    Note.objects.create({
+        "entity_id": lead_id,
+        "note_type": "service_message",
+        "params": {
+            "text": note_text
+        }
+    },)
 
 
 @dramatiq.actor(max_retries=2)
@@ -119,7 +135,7 @@ def setErrorStatus(lead_id: int, pipeline_id: int):
             lead_id,
             {
                 "status_id": new_status
-            })
+            }),
 
 
 def init_tokens(skip_error=False):
