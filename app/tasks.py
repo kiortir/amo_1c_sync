@@ -1,6 +1,6 @@
 import os
 from http.client import HTTPException
-from typing import Tuple
+from typing import Tuple, Union
 
 import dramatiq
 import httpx
@@ -27,12 +27,23 @@ amo_logger = setup_logger(
     name='amo', logfile='amo_logs.json', maxBytes=1e6, backupCount=3)
 hook_logger = setup_logger(name='hook')
 
+SAUNA_NAME_MAP = {
+    "Альпийская": "ЦБ000027",
+    "Деревенская": "ЦБ000001",
+    "Каменная": "ЦБ000016",
+    "Русская": "ЦБ000005",
+    "Скандинавская": "ЦБ000015",
+    "Славянская": "ЦБ000017",
+    "Турецкая": "ЦБ000003",
+    "Финская": "ЦБ000006",
+    "Японская": "ЦБ000007",
+}
 
-# def get_status(previous_status_id: int, status_id: int):
-#     match_list = [(status.match(previous_status_id, status_id),
-#                    status.status_code) for status in StatusMatch.statuses]
-#     max_match, match_status = max(match_list, default=(None, None), key=lambda x: x[0])
-#     return match_status if max_match else None
+
+def get_sauna_field(sauna_name: str):
+    for type_, code in SAUNA_NAME_MAP.items():
+        if sauna_name.startswith(type_):
+            return f'{code} code{sauna_name}'
 
 
 @dramatiq.actor
@@ -52,13 +63,14 @@ def dispatch(lead_id: int, previous_status=None):
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
 
-    status = StatusMatch.get_status(previous_status, data.status.id)
+    status: Union[StatusMatch, None] = StatusMatch.get_status(
+        previous_status, data.status.id)
     if status is None:
         return
     py_data = BoundHook(
         id=data.id,
-        status=status,
-        room=getattr(data.sauna, 'value', None),
+        status=status.status_code,
+        room=get_sauna_field(getattr(data.sauna, 'value', None)),
         start_booking_date=data.booking_start_datetime,
         end_booking_date=data.booking_end_datetime,
         summ_pay=data.advance_payment,
@@ -73,12 +85,12 @@ def dispatch(lead_id: int, previous_status=None):
     if cached_key is not None:
         cached_key = cached_key.decode('utf-8')
     if hash_key != cached_key:
-        sendTo1c.send(new_data.json())
+        sendTo1c.send(new_data.json(), status.endpoint)
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
 @dramatiq.actor(max_retries=3)
-def sendTo1c(data):
+def sendTo1c(data, endpoint):
     hook_logger.info(data)
     data = ujson.loads(data)
     message = CurrentMessage.get_current_message()
@@ -87,7 +99,7 @@ def sendTo1c(data):
         setErrorStatus.send(data["data"]["id"], data["pipe"])
         raise HTTPException
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
-    response = send_request(data["data"])
+    response = send_request(data["data"], endpoint or ENDPOINT)
     try:
         hook_logger.info(response.text)
     except Exception:

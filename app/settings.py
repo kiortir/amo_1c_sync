@@ -27,9 +27,9 @@ ENDPOINT = os.environ.get('ENDPOINT')
 request_client = httpx.Client()
 
 
-def send_request(data):
+def send_request(data, endpoint):
     # print(data)
-    return request_client.post(ENDPOINT, json=data)
+    return request_client.post(endpoint, json=data)
 
 
 class StatusMatch:
@@ -40,10 +40,11 @@ class StatusMatch:
         cls.statuses.append(instance)
         return instance
 
-    def __init__(self, status_code: str):
+    def __init__(self, status_code: str, status_endpoint: str):
         self.status_code = status_code
         self.status_set: set[int] = set()
         self.previous_status_set: set[int] = set()
+        self.endpoint = status_endpoint
 
     def match(self, previous_status, status):
         total_match = 0
@@ -65,13 +66,16 @@ class StatusMatch:
     def get_status(cls, previous_status_id: int, status_id: int):
         max_match_value = 0
         max_match_status_code = None
+        max_match_status = None
         for status in cls.statuses:
             match_value = status.match(previous_status_id, status_id)
             if match_value > max_match_value:
                 max_match_value = match_value
                 max_match_status_code = status.status_code
 
-        return max_match_status_code if max_match_value else None
+                max_match_status = status
+
+        return max_match_status if max_match_value else None
 
     def previous(self, status_id):
         self.previous_status_set.add(status_id)
@@ -80,11 +84,17 @@ class StatusMatch:
         self.status_set.add(status_id)
 
 
-CREATE_BOOKING = StatusMatch('create_booking')
-DELETE_BOOKING = StatusMatch('delete_booking')
-CREATE_STAY = StatusMatch('create_stay')
-DELETE_STAY = StatusMatch('delete_stay')
-DELETE_ALL = StatusMatch('delete_all')
+BOOKING_ENDPOINT = os.environ.get('BOOKING_ENDPOINT')
+BOOKING_DEL_ENDPOINT = os.environ.get('BOOKING_DEL_ENDPOINT')
+ACCOMODATION_ENDPOINT = os.environ.get('ACCOMODATION_ENDPOINT')
+ACCOMODATION_DEL_ENDPOINT = os.environ.get('ACCOMODATION_DEL_ENDPOINT')
+
+CREATE_BOOKING = StatusMatch('create_booking', BOOKING_ENDPOINT or ENDPOINT)
+DELETE_BOOKING = StatusMatch(
+    'delete_booking', BOOKING_DEL_ENDPOINT or ENDPOINT)
+CREATE_STAY = StatusMatch('create_stay', ACCOMODATION_ENDPOINT or ENDPOINT)
+DELETE_STAY = StatusMatch('delete_stay', ACCOMODATION_DEL_ENDPOINT or ENDPOINT)
+DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
 
 
 NAME_TO_STATUS = {
@@ -131,7 +141,7 @@ SUBDOMAIN = 'usadbavip'
 DATA = {
     "client_id":  INTEGRATION_ID,
     "client_secret": SECRET_KEY,
-    "subdomain":  'usadbavip',
+    "subdomain":  SUBDOMAIN,
     "redirect_url":  REDIRECT_URI,
 }
 
