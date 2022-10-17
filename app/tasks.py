@@ -1,6 +1,8 @@
+from app.v2.entity import lead
+from app.v2.interaction import GenericInteraction
 import os
 from http.client import HTTPException
-from typing import Tuple, Union
+from typing import Generic, Tuple, Union
 
 import dramatiq
 import httpx
@@ -15,7 +17,6 @@ import app.settings as SETTINGS
 from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request, STATUS_TO_DESCRIPTION_MAP
 from app.models import BoundHook, BoundHookMessage, Contact, Lead
 from app.v2 import Company, Pipeline
-from app.v2.entity.note import _Note as Note
 from app.tokens import storage
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
@@ -118,20 +119,19 @@ def sendTo1c(data, endpoint):
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
         response.text, 'получил непонятный ответ на запрос {status}')
     note_data = {
-        "entity_type": 'leads',
-        "entity_id": lead_id,
         "note_type": "service_message",
         "params": {
             "service": "1С коннектор",
             "text": note_text
         }
     }
-    setNote.send(note_data)
+    setNote.send(note_data, lead_id)
 
 
-@dramatiq.actor
-def setNote(data):
-    Note.objects.create(data)
+@dramatiq.actor(max_retries=2)
+def setNote(data, lead_id):
+    interaction = GenericInteraction(path=f'leads/{lead_id}/notes')
+    interaction.create(data)
 
 
 @dramatiq.actor(max_retries=2)

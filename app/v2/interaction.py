@@ -36,6 +36,8 @@ class BaseInteraction:
         headers = headers or {}
         headers.update(self.get_headers())
         try:
+            print(self._get_url(
+                path))
             response = self._session.request(method, url=self._get_url(
                 path), json=data, params=params, headers=headers)
         except requests.exceptions.ConnectionError as e:

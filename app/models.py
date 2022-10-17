@@ -1,10 +1,21 @@
 from datetime import datetime
-
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from app.v2 import Lead as _Lead, custom_field, Contact as _Contact
+from app.v2 import Contact as _Contact
+from app.v2 import Lead as _Lead
+from app.v2 import custom_field
+from app.v2.interaction import GenericInteraction
+
+
+# class NoteInteraction(GenericInteraction):
+#     def create(self, data):
+#         response, status = self.request(
+#             "post", self._get_path(), data=[data])
+#         if status == 400:
+#             print('zzz')
+#         return response
 
 
 class Lead(_Lead):
