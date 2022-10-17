@@ -41,9 +41,11 @@ SAUNA_NAME_MAP = {
 
 
 def get_sauna_field(sauna_name: str):
+    if sauna_name is None:
+        return None
     for type_, code in SAUNA_NAME_MAP.items():
         if sauna_name.startswith(type_):
-            return f'{code} code{sauna_name}'
+            return f'{code} {sauna_name}'
 
 
 @dramatiq.actor
