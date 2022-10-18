@@ -131,6 +131,7 @@ def sendTo1c(data, endpoint):
 def setNote(data, lead_id):
     interaction = NoteInteraction(path=f'leads/{lead_id}/notes')
     interaction.create(data)
+    hook_logger.info('Примечание оставлено')
 
 
 @dramatiq.actor(max_retries=2)
