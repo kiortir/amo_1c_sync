@@ -29,7 +29,7 @@ request_client = httpx.Client()
 
 def send_request(data, endpoint):
     # print(data)
-    return request_client.post(endpoint, json=data)
+    return request_client.post(endpoint, json=data, timeout=120000)
 
 
 class StatusMatch:
