@@ -49,7 +49,7 @@ def get_sauna_field(sauna_name: str):
             return code
 
 
-@dramatiq.actor
+@dramatiq.actor(max_retries=3)
 def dispatch(lead_id: int, previous_status=None):
     try:
         data: Lead = Lead.objects.get(lead_id)
@@ -104,10 +104,6 @@ def sendTo1c(data, endpoint):
         raise HTTPException
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
     response = send_request(data["data"], endpoint or ENDPOINT)
-    try:
-        hook_logger.info(response.text)
-    except Exception:
-        pass
     hook_logger.info(
         f'Код ответа = {response.status_code}, ответ = {response.text}')
     # if response.status_code != 200:
@@ -119,6 +115,7 @@ def sendTo1c(data, endpoint):
 
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
         response.text, f'получил непонятный ответ на запрос {status}')
+    hook_logger.info(f'{status=}, response = ->{response.text}<-, {note_text=}')
     note_data = {
         "note_type": "service_message",
         "params": {
