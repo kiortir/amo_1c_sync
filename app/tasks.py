@@ -46,7 +46,7 @@ def get_sauna_field(sauna_name: str):
         return None
     for type_, code in SAUNA_NAME_MAP.items():
         if sauna_name.startswith(type_):
-            return f'{code} {sauna_name}'
+            return code
 
 
 @dramatiq.actor
