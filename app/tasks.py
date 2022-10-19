@@ -109,14 +109,14 @@ def sendTo1c(data, endpoint):
     # if response.status_code != 200:
     #     raise HTTPException
     status = data["data"]["status"]
-    response_status = response.text
+    response_status = response.content.decode("utf-8-sig")
     if response_status in {'error', 'booking_error'}:
         setErrorStatus.send(lead_id, data["pipe"])
 
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
-        response.text, f'получил непонятный ответ на запрос {status}')
+        response_status, f'получил непонятный ответ на запрос {status}')
     hook_logger.info(
-        f'{status=}, response = ->{response.text}<-, {note_text=}, map = {STATUS_TO_DESCRIPTION_MAP[status]}, raw={response.content}')
+        f'{status=}, response = ->{response_status}<-, {note_text=}, map = {STATUS_TO_DESCRIPTION_MAP[status]}, raw={response.content.decode("utf-8-sig")}')
     note_data = {
         "note_type": "service_message",
         "params": {
