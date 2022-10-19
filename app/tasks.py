@@ -108,8 +108,10 @@ def sendTo1c(data, endpoint):
         hook_logger.info(response.text)
     except Exception:
         pass
-    if response.status_code != 200:
-        raise HTTPException
+    hook_logger.info(
+        f'Код ответа = {response.status_code}, ответ = {response.text}')
+    # if response.status_code != 200:
+    #     raise HTTPException
     status = data["data"]["status"]
     response_status = response.text
     if response_status in {'error', 'booking_error'}:
