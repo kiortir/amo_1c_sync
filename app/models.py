@@ -1,4 +1,5 @@
-from datetime import datetime
+from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
@@ -97,7 +98,10 @@ class WebHook(BaseModel):
 
 
 def dateTimeEncoder(date: datetime):
-    return datetime.strftime(date, '%d.%m.%Y %H:%M:%S')
+    date = date.replace(tzinfo=ZoneInfo('Etc/UTC'))
+    aware = date.astimezone(ZoneInfo('Europe/Ulyanovsk'))
+
+    return aware.strftime('%d.%m.%Y %H:%M:%S')
 
 
 class BoundHook(BaseModel):
