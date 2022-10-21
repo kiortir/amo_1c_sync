@@ -69,6 +69,7 @@ class StatusMatch:
         max_match_status = None
         for status in cls.statuses:
             match_value = status.match(previous_status_id, status_id)
+            print(previous_status_id, status_id)
             if match_value > max_match_value:
                 max_match_value = match_value
                 max_match_status_code = status.status_code
@@ -157,6 +158,10 @@ STATUS_TO_DESCRIPTION_MAP = {
         'double': 'найден дубль бланка брони в 1С',
         'booking_error': 'время брони занято в 1С',
     },
+    "update_booking": {
+        'ok': 'бланк брони обновлен в 1С',
+        'error': 'ошибка при обновлении бланка брони в 1С',
+    },
     'delete_booking': {
         'ok': 'бланк брони удален в 1С',
         'error': 'ошибка при удалении бланка брони в 1С',
@@ -165,6 +170,10 @@ STATUS_TO_DESCRIPTION_MAP = {
         'ok': 'бланк проживания создан в 1С',
         'error': 'ошибка связи с 1С при создании бланка проживания',
         'double': 'найден дубль бланка проживания в 1С',
+    },
+    "update_stay": {
+        'ok': 'бланк проживания обновлен в 1С',
+        'error': 'ошибка при обновлении бланка проживания в 1С',
     },
     'delete_stay': {
         'ok': 'бланк проживания удален в 1С',
