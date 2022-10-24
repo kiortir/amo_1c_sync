@@ -1,4 +1,4 @@
-from apscheduler.schedulers.gevent import GeventScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.redis import RedisJobStore
@@ -225,11 +225,10 @@ def refresh_tokens():
 if SETTINGS.IS_ROOT:
     init_tokens()
     jobstores = {
-        "redis": RedisJobStore(),
         "default": MemoryJobStore()
     }
 
-    scheduler = GeventScheduler(jobstores=jobstores)
+    scheduler = BackgroundScheduler(jobstores=jobstores)
     scheduler.add_job(refresh_tokens.send, 'interval', seconds=15)
     try:
         scheduler.start()
