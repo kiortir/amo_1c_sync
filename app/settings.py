@@ -89,6 +89,8 @@ BOOKING_ENDPOINT = os.environ.get('BOOKING_ENDPOINT')
 BOOKING_DEL_ENDPOINT = os.environ.get('BOOKING_DEL_ENDPOINT')
 ACCOMODATION_ENDPOINT = os.environ.get('ACCOMODATION_ENDPOINT')
 ACCOMODATION_DEL_ENDPOINT = os.environ.get('ACCOMODATION_DEL_ENDPOINT')
+DELETE_ALL_ENDPOINT = os.environ.get('DELETE_ALL_ENDPOINT')
+
 
 CREATE_BOOKING = StatusMatch('create_booking', BOOKING_ENDPOINT or ENDPOINT)
 UPDATE_BOOKING = StatusMatch('update_booking', BOOKING_ENDPOINT or ENDPOINT)
@@ -99,11 +101,11 @@ CREATE_STAY = StatusMatch('create_stay', ACCOMODATION_ENDPOINT or ENDPOINT)
 UPDATE_STAY = StatusMatch('update_stay', BOOKING_ENDPOINT or ENDPOINT)
 DELETE_STAY = StatusMatch('delete_stay', ACCOMODATION_DEL_ENDPOINT or ENDPOINT)
 
-DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
+DELETE_ALL = StatusMatch('delete_all', DELETE_ALL_ENDPOINT or ENDPOINT)
 
 
 NAME_TO_STATUS = {
-    None: (UPDATE_BOOKING.previous, UPDATE_STAY.previous),
+    # None: (UPDATE_BOOKING.previous, UPDATE_STAY.previous),
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous, UPDATE_BOOKING.current, UPDATE_BOOKING.previous),
     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous, UPDATE_STAY.current),
     'Закрыто и не реализовано': (DELETE_ALL.current,),

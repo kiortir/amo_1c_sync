@@ -1,3 +1,8 @@
+from apscheduler.schedulers.gevent import GeventScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.jobstores.redis import RedisJobStore
+from sched import scheduler
 from app.v2.entity import lead
 import os
 from http.client import HTTPException
@@ -171,7 +176,7 @@ def init_tokens(skip_error=False):
             response = response.json()
             storage.save_tokens(
                 response["access_token"], response["refresh_token"])
-            refresh_tokens.send_with_options(delay=7200000)
+            # refresh_tokens.send_with_options(delay=7200000)
 
 
 def fetch_statuses():
@@ -214,10 +219,21 @@ def refresh_tokens():
     hook_logger.info('Обновляем токены')
     token, refresh_token = _get_new_tokens()
     storage.save_tokens(token, refresh_token)
-    refresh_tokens.send_with_options(delay=720000)
+    # refresh_tokens.send_with_options(delay=43200000)
 
 
-if SETTINGS.IS_ROOT or SETTINGS.DEBUG:
+if SETTINGS.IS_ROOT:
     init_tokens()
+    jobstores = {
+        "redis": RedisJobStore(),
+        "default": MemoryJobStore()
+    }
+
+    scheduler = GeventScheduler(jobstores=jobstores)
+    scheduler.add_job(refresh_tokens.send, 'interval', seconds=15)
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
 else:
     fetch_statuses()
