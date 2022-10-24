@@ -224,16 +224,10 @@ def refresh_tokens():
 
 if SETTINGS.IS_ROOT:
     init_tokens()
-    jobstores = {
-        "default": MemoryJobStore()
-    }
 
-    scheduler = BackgroundScheduler(jobstores=jobstores)
+    scheduler = BackgroundScheduler()
     scheduler.add_job(refresh_tokens.send,
                       IntervalTrigger(seconds=15))
-    try:
-        scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        pass
+    scheduler.start()
 else:
     fetch_statuses()
