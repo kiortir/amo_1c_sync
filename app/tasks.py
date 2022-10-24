@@ -227,7 +227,7 @@ if SETTINGS.IS_ROOT:
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(refresh_tokens.send,
-                      IntervalTrigger(seconds=30))
+                      IntervalTrigger(hours=3))
     scheduler.start()
 else:
     fetch_statuses()
