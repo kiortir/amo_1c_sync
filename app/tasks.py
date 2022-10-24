@@ -229,7 +229,8 @@ if SETTINGS.IS_ROOT:
     }
 
     scheduler = BackgroundScheduler(jobstores=jobstores)
-    scheduler.add_job(refresh_tokens.send, 'interval', seconds=15)
+    scheduler.add_job(refresh_tokens.send,
+                      IntervalTrigger(seconds=15))
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):
