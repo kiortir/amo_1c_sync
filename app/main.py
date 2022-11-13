@@ -26,7 +26,7 @@ async def manage_webhook(hook_payload: Request):
     hook_logger.info(raw_data)
     parsed_data = WebHook.parse_obj(raw_data)
     data = parsed_data.leads.fields
-    dispatch.send(data.id, getattr(data, 'old_status_id') if getattr(raw_data, 'status') else None)
+    dispatch.send(data.id, getattr(data, 'old_status_id') if 'status' in raw_data['leads'] else None)
     return {'status': 'ok'}
 
 
