@@ -68,7 +68,7 @@ class Leads(BaseModel):
     add: list[Field0] = None
 
     delete: Optional[HookStatus] = None
-    status: Optional[HookStatus] = None
+    status: list[Field0] = None
 
     @property
     def fields(self):
