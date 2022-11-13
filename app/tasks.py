@@ -43,6 +43,7 @@ SAUNA_NAME_MAP = {
     "Турецкая": "ЦБ000003",
     "Финская": "ЦБ000006",
     "Японская": "ЦБ000007",
+    "Римская": "ЦБ100018",
 }
 
 
@@ -50,7 +51,7 @@ def get_sauna_field(sauna_name: str):
     if sauna_name is None:
         return None
     for type_, code in SAUNA_NAME_MAP.items():
-        if sauna_name.startswith(type_):
+        if sauna_name.lower().startswith(type_.lower()):
             return code
 
 
@@ -123,9 +124,9 @@ def sendTo1c(data, endpoint):
     hook_logger.info(
         f'{status=}, response = ->{response_status}<-, {note_text=}, map = {STATUS_TO_DESCRIPTION_MAP[status]}, raw={response.content.decode("utf-8-sig")}')
     note_data = {
-        "note_type": "service_message",
+        "note_type": "common",
         "params": {
-            "service": "1С коннектор",
+            # "service": "1С коннектор",
             "text": note_text
         }
     }
