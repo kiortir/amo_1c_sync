@@ -22,11 +22,11 @@ def read_root(request: Request):
 @app.post("/hook")
 async def manage_webhook(hook_payload: Request):
     query = await hook_payload.body()
-    raw_data = qs_parser.parse(query, normalized=True)
-    hook_logger.info(raw_data)
-    parsed_data = WebHook.parse_obj(raw_data)
+    data = qs_parser.parse(query, normalized=True)
+    hook_logger.info(data)
+    parsed_data = WebHook.parse_obj(data)
     data = parsed_data.leads.fields
-    dispatch.send(data.id, getattr(data, 'old_status_id') if 'status' in raw_data['leads'] else None)
+    dispatch.send(data.id, getattr(data, 'old_status_id'))
     return {'status': 'ok'}
 
 
