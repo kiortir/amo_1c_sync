@@ -153,7 +153,7 @@ DATA = {
 }
 
 STATUS_TO_DESCRIPTION_MAP = {
-    'create_booking': {
+    'create_or_update_booking': {
         'create': 'бланк брони создан в 1С',
         'error': 'ошибка при создании бланка брони в 1С',
         'update': 'бланк брони обновлен в 1С',

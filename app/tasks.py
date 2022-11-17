@@ -124,8 +124,7 @@ def sendTo1c(data, endpoint):
 
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
         response_status, f'получил непонятный ответ на запрос {status}')
-    hook_logger.info(
-        f'{status=}, response = ->{response_status}<-, {note_text=}, map = {STATUS_TO_DESCRIPTION_MAP[status]}, raw={response.content.decode("utf-8-sig")}')
+    hook_logger.info(f'1C: {response_status}')
     note_data = {
         "note_type": "common",
         "params": {
