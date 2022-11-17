@@ -69,7 +69,6 @@ class StatusMatch:
         max_match_status = None
         for status in cls.statuses:
             match_value = status.match(previous_status_id, status_id)
-            print(previous_status_id, status_id)
             if match_value > max_match_value:
                 max_match_value = match_value
                 max_match_status_code = status.status_code
@@ -92,19 +91,20 @@ ACCOMODATION_DEL_ENDPOINT = os.environ.get('ACCOMODATION_DEL_ENDPOINT')
 DELETE_ALL_ENDPOINT = os.environ.get('DELETE_ALL_ENDPOINT')
 
 
-CREATE_BOOKING = StatusMatch('create_booking', BOOKING_ENDPOINT or ENDPOINT)
-UPDATE_BOOKING = StatusMatch('update_booking', BOOKING_ENDPOINT or ENDPOINT)
+CREATE_BOOKING = StatusMatch('create_or_update_booking', BOOKING_ENDPOINT or ENDPOINT)
+# UPDATE_BOOKING = StatusMatch('update_booking', BOOKING_ENDPOINT or ENDPOINT)
 DELETE_BOOKING = StatusMatch(
     'delete_booking', BOOKING_DEL_ENDPOINT or ENDPOINT)
 
-CREATE_STAY = StatusMatch('create_stay', ACCOMODATION_ENDPOINT or ENDPOINT)
-UPDATE_STAY = StatusMatch('update_stay', BOOKING_ENDPOINT or ENDPOINT)
+CREATE_STAY = StatusMatch('create_or_update_stay', ACCOMODATION_ENDPOINT or ENDPOINT)
+# UPDATE_STAY = StatusMatch('update_stay', BOOKING_ENDPOINT or ENDPOINT)
 DELETE_STAY = StatusMatch('delete_stay', ACCOMODATION_DEL_ENDPOINT or ENDPOINT)
 
 DELETE_ALL = StatusMatch('delete_all', DELETE_ALL_ENDPOINT or ENDPOINT)
 
 
 NAME_TO_STATUS = {
+    # None: (UPDATE_BOOKING.previous, UPDATE_STAY.previous),
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
@@ -156,8 +156,8 @@ STATUS_TO_DESCRIPTION_MAP = {
     'create_booking': {
         'create': 'бланк брони создан в 1С',
         'error': 'ошибка при создании бланка брони в 1С',
-        'double': 'найден дубль бланка брони в 1С',
-        'booking_error': 'время брони занято в 1С',
+        'update': 'бланк брони обновлен в 1С',
+        'error_update': 'ошибка обновления бланка брони в 1С',
     },
     "update_booking": {
         'ok': 'бланк брони обновлен в 1С',
@@ -167,10 +167,12 @@ STATUS_TO_DESCRIPTION_MAP = {
         'ok': 'бланк брони удален в 1С',
         'error': 'ошибка при удалении бланка брони в 1С',
     },
-    'create_stay': {
+    'create_or_update_stay': {
         'ok': 'бланк проживания создан в 1С',
         'error': 'ошибка связи с 1С при создании бланка проживания',
-        'double': 'найден дубль бланка проживания в 1С',
+        'update': 'бланк брони обновлен в 1С',
+        'error_stay': 'ошибка обновления бланка брони в 1С',
+
     },
     "update_stay": {
         'ok': 'бланк проживания обновлен в 1С',
