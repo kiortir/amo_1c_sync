@@ -68,7 +68,7 @@ class Leads(BaseModel):
     add: list[Field0] = None
 
     delete: Optional[HookStatus] = None
-    status: Optional[HookStatus] = None
+    status: list[Field0] = None
 
     @property
     def fields(self):
@@ -77,7 +77,7 @@ class Leads(BaseModel):
         for name in names:
             hook_status = getattr(self, name)
             if hook_status is not None:
-                if name in {'update', 'add'}:
+                if name in {'update', 'add', 'status'}:
                     return hook_status[0]
                 if name == 'status':
                     return hook_status.field_0
