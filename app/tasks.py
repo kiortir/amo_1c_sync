@@ -97,6 +97,9 @@ def dispatch(lead_id: int, previous_status=None):
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
+# @dramatiq.actor
+
+
 @dramatiq.actor(max_retries=3)
 def sendTo1c(data, endpoint):
     hook_logger.info(data)

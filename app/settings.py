@@ -105,13 +105,12 @@ DELETE_ALL = StatusMatch('delete_all', DELETE_ALL_ENDPOINT or ENDPOINT)
 
 
 NAME_TO_STATUS = {
-    # None: (UPDATE_BOOKING.previous, UPDATE_STAY.previous),
-    'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous, UPDATE_BOOKING.current, UPDATE_BOOKING.previous),
-    'Проживание': (CREATE_STAY.current, DELETE_STAY.previous, UPDATE_STAY.current),
-    'Закрыто и не реализовано': (DELETE_ALL.current,),
+    'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
+    'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
+    'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
     'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
     'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
-    'Бронь оплачена': (DELETE_STAY.current, DELETE_BOOKING.previous, UPDATE_BOOKING.current),
+    'Закрыто и не реализовано': (DELETE_ALL.current,),
 }
 
 
@@ -155,7 +154,7 @@ DATA = {
 
 STATUS_TO_DESCRIPTION_MAP = {
     'create_booking': {
-        'ok': 'бланк брони создан в 1С',
+        'create': 'бланк брони создан в 1С',
         'error': 'ошибка при создании бланка брони в 1С',
         'double': 'найден дубль бланка брони в 1С',
         'booking_error': 'время брони занято в 1С',

@@ -1,71 +1,63 @@
 {
-    "asctime": "2022-09-22 11:28:01,870",
-    "filename": "tasks.py",
-    "funcName": "dispatch",
-    "levelname": "INFO",
-    "levelno": 20,
-    "lineno": 44,
-    "module": "tasks",
-    "message": null,
-    "name": "hook",
-    "pathname": "/home/michael/projects/rockmedia/amo_1c_sync/./app/tasks.py",
-    "process": 30735,
-    "processName": "Process-2",
-    "threadName": "Thread-5",
-    "__root__": {
-        "leads": {
-            "status": {
-                "field": {
-                    "id": 25399013,
-                    "name": "Lead title",
-                    "old_status_id": 7039101,
-                    "status_id": 142,
-                    "price": "0",
-                    "responsible_user_id": 123123,
-                    "last_modified": 1413554372,
-                    "modified_user_id": 123123,
-                    "created_user_id": 123123,
-                    "date_create": 1413554349,
-                    "account_id": 7039099,
-                    "custom_fields": [
-                        {
-                            "id": "427183",
-                            "name": "Checkbox custom field",
-                            "values": [
-                                "1"
-                            ]
-                        },
-                        {
-                            "id": "427271",
-                            "name": "Date custom field",
-                            "values": [
-                                "1412380800"
-                            ]
-                        },
-                        {
-                            "id": "1069602",
-                            "name": "Checkbox custom field",
-                            "values": [
-                                "0"
-                            ]
-                        },
-                        {
-                            "id": "427661",
-                            "name": "Text custom field",
-                            "values": [
-                                "Валера"
-                            ]
-                        },
-                        {
-                            "id": "1075272",
-                            "name": "Date custom field",
-                            "values": [
-                                "1413331200"
-                            ]
-                        }
-                    ]
-                }
+    "leads": {
+        "update": [
+            {
+                "id": "8500885",
+                "name": "Новая сделка (79176193762)",
+                "status_id": "50116306",
+                "price": "0",
+                "responsible_user_id": "8490070",
+                "last_modified": "1666797591",
+                "modified_user_id": "0",
+                "created_user_id": "0",
+                "date_create": "1666797438",
+                "pipeline_id": "5699695",
+                "tags": [
+                    {
+                        "id": "78613",
+                        "name": "Входящий"
+                    }
+                ],
+                "account_id": "30348370",
+                "created_at": "1666797438",
+                "updated_at": "1666797591"
             }
+        ]
+    },
+    "account": {
+        "subdomain": "usadbavip",
+        "id": "30348370",
+        "_links": {
+            "self": "https://usadbavip.amocrm.ru"
         }
     }
-}{"asctime": "2022-09-22 11:44:35,242", "filename": "tasks.py", "funcName": "dispatch", "levelname": "INFO", "levelno": 20, "lineno": 43, "module": "tasks", "message": null, "name": "hook", "pathname": "/home/michael/projects/rockmedia/amo_1c_sync/./app/tasks.py", "process": 32490, "processName": "Process-5", "threadName": "Thread-5", "__root__": {"leads": {"status": {"field": {"id": 25399013, "name": "Lead title", "old_status_id": 7039101, "status_id": 142, "price": "0", "responsible_user_id": 123123, "last_modified": 1413554372, "modified_user_id": 123123, "created_user_id": 123123, "date_create": 1413554349, "account_id": 7039099, "custom_fields": [{"id": "427183", "name": "Checkbox custom field", "values": ["1"]}, {"id": "427271", "name": "Date custom field", "values": ["1412380800"]}, {"id": "1069602", "name": "Checkbox custom field", "values": ["0"]}, {"id": "427661", "name": "Text custom field", "values": ["Валера"]}, {"id": "1075272", "name": "Date custom field", "values": ["1413331200"]}]}}}}}
+}
+
+{
+    "leads": {
+        "add": [
+            {
+                "id": "8500885",
+                "name": "Новая сделка (79176193762)",
+                "status_id": "50116306",
+                "price": "0",
+                "responsible_user_id": "2666554",
+                "last_modified": "1666797438",
+                "modified_user_id": "0",
+                "created_user_id": "0",
+                "date_create": "1666797438",
+                "pipeline_id": "5699695",
+                "account_id": "30348370",
+                "created_at": "1666797438",
+                "updated_at": "1666797438"
+            }
+        ]
+    },
+    "account": {
+        "subdomain": "usadbavip",
+        "id": "30348370",
+        "_links": {
+            "self": "https://usadbavip.amocrm.ru"
+        }
+    }
+}
