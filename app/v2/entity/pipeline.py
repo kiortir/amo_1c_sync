@@ -49,8 +49,8 @@ def cache_24h(foo):
     kwd_mark = object()
     cache = {}
 
-    def wrapper(*args, **kwargs):
-        key = tuple(args) + (kwd_mark,) + tuple(sorted(kwargs.items()))
+    def wrapper(self, object_id, include=None):
+        key = object_id + str(include)
         print(key)
         cached_entry = cache.get(key)
         if cached_entry:
@@ -60,7 +60,7 @@ def cache_24h(foo):
                 print("Инфа о пайплайне из кэша")
                 return cached_entry['value']
 
-        r = foo(*args, **kwargs)
+        r = foo(self, object_id, include=None)
 
         cache[key] = {
             "timestamp": time.now(),
