@@ -65,6 +65,7 @@ def cache_24h(foo):
             "timestamp": now,
             "value": r
         }
+        print('Пересчет кеша пайплайна')
 
         return r
 
