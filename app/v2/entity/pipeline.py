@@ -1,3 +1,4 @@
+import time
 from .. import fields, manager, model
 from ..interaction import GenericInteraction
 
@@ -44,9 +45,39 @@ class _StatusField(fields._Field):
         return [Status(data=item) for item in data]
 
 
+def cache_24h(foo: function):
+    kwd_mark = object()
+    cache = {}
+
+    def wrapper(*args, **kwargs):
+        key = args + (kwd_mark,) + tuple(sorted(kwargs.items()))
+        cached_entry = cache.get(key)
+        if cached_entry:
+            timestamp = cached_entry['timestamp']
+            now = time.time()
+            if (now - timestamp) < 86400:
+                print("Инфа о пайплайне из кэша")
+                return cached_entry['value']
+
+        r = foo(*args, **kwargs)
+
+        cache[key] = {
+            "timestamp": time.now(),
+            "value": r
+        }
+
+        return r
+
+    return wrapper
+
+
 class PipelinesInteraction(GenericInteraction):
     path = "leads/pipelines"
     field = "pipelines"
+
+    @cache_24h
+    def get(self, object_id, include=None):
+        return super().get(object_id, include)
 
 
 class Pipeline(model.Model):

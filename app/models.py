@@ -4,10 +4,16 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from app.v2 import Contact as _Contact, exceptions
-from app.v2 import Lead as _Lead
-from app.v2 import custom_field
-from app.v2.interaction import GenericInteraction
+try:
+    from app.v2 import Contact as _Contact, exceptions
+    from app.v2 import Lead as _Lead
+    from app.v2 import custom_field
+    from app.v2.interaction import GenericInteraction
+except ModuleNotFoundError:
+    from v2 import Contact as _Contact, exceptions
+    from v2 import Lead as _Lead
+    from v2 import custom_field
+    from v2.interaction import GenericInteraction
 
 
 class NoteInteraction(GenericInteraction):

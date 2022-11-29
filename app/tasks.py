@@ -1,27 +1,41 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.jobstores.redis import RedisJobStore
-from sched import scheduler
-from app.v2.entity import lead
 import os
 from http.client import HTTPException
+from sched import scheduler
 from typing import Tuple, Union
 
 import dramatiq
 import httpx
 import ujson
+from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.jobstores.redis import RedisJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
-from app.v2.exceptions import NotFound, UnAuthorizedException
 
-
-import app.settings as SETTINGS
-from app.settings import DEBUG, ERROR_STATUS, StatusMatch, redis_client, ENDPOINT, send_request, STATUS_TO_DESCRIPTION_MAP
-from app.models import BoundHook, BoundHookMessage, Contact, Lead, NoteInteraction
-from app.v2 import Company, Pipeline
-from app.tokens import storage
+try:
+    import app.settings as SETTINGS
+    from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
+                            NoteInteraction)
+    from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
+                              STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client,
+                              send_request)
+    from app.tokens import storage
+    from app.v2 import Company, Pipeline
+    from app.v2.entity import lead
+    from app.v2.exceptions import NotFound, UnAuthorizedException
+except ModuleNotFoundError:
+    import settings as SETTINGS
+    from models import (BoundHook, BoundHookMessage, Contact, Lead,
+                        NoteInteraction)
+    from settings import (DEBUG, ENDPOINT, ERROR_STATUS,
+                          STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client,
+                          send_request)
+    from tokens import storage
+    from v2 import Company, Pipeline
+    from v2.entity import lead
+    from v2.exceptions import NotFound, UnAuthorizedException
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
 
@@ -53,6 +67,14 @@ def get_sauna_field(sauna_name: str):
     for type_, code in SAUNA_NAME_MAP.items():
         if sauna_name.lower().startswith(type_.lower()):
             return code
+
+
+def get_status(lead_id: int):
+    response = send_request({
+        "id": lead_id,
+        "status": "blank_status"
+    }, 'http://87.76.13.250:8080/Hotel/hs/Amo/Reservation')
+    print(response)
 
 
 @dramatiq.actor(max_retries=3)
@@ -224,13 +246,12 @@ def refresh_tokens():
     storage.save_tokens(token, refresh_token)
     # refresh_tokens.send_with_options(delay=43200000)
 
-
 if SETTINGS.IS_ROOT:
-    init_tokens()
+        init_tokens()
 
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(refresh_tokens.send,
-                      IntervalTrigger(hours=3))
-    scheduler.start()
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(refresh_tokens.send,
+                          IntervalTrigger(hours=3))
+        scheduler.start()
 else:
-    fetch_statuses()
+        fetch_statuses()

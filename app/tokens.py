@@ -1,9 +1,15 @@
-from app.settings import redis_client, DATA
-import app.settings as SETTINGS
 import threading
-from amocrm.v2 import tokens, exceptions
+from typing import Optional, Tuple
+
 import httpx
-from typing import Tuple, Optional
+from amocrm.v2 import exceptions, tokens
+
+try:
+    import app.settings as SETTINGS
+    from app.settings import DATA, redis_client
+except ModuleNotFoundError:
+    import settings as SETTINGS
+    from settings import DATA, redis_client
 
 
 class TokensStorage:

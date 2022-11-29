@@ -2,11 +2,15 @@ from typing import Tuple
 
 import requests
 
+try:
+    import app.settings as SETTINGS
+    from app.tokens import storage
+except ModuleNotFoundError:
+    import settings as SETTINGS
+    from tokens import storage
+
 from . import exceptions
 from .filters import Filter
-
-from app.tokens import storage
-import app.settings as SETTINGS
 
 _session = requests.Session()
 

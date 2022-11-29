@@ -1,12 +1,16 @@
 
-from app.models import Lead, WebHook
-from app.tasks import dispatch, hook_logger
-
-
 import os.path
 import sys
+
 from fastapi import FastAPI, Request
 from querystring_parser import parser as qs_parser
+
+try:
+    from app.models import Lead, WebHook
+    from app.tasks import dispatch, hook_logger
+except ModuleNotFoundError:
+    from models import Lead, WebHook
+    from tasks import dispatch, hook_logger
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
