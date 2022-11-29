@@ -51,6 +51,7 @@ def cache_24h(foo):
 
     def wrapper(*args, **kwargs):
         key = tuple(args) + (kwd_mark,) + tuple(sorted(kwargs.items()))
+        print(key)
         cached_entry = cache.get(key)
         if cached_entry:
             timestamp = cached_entry['timestamp']
