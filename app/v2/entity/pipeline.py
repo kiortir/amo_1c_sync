@@ -50,7 +50,7 @@ def cache_24h(foo):
     cache = {}
 
     def wrapper(self, object_id, include=None):
-        key = object_id + str(include)
+        key = str(object_id) + str(include)
         print(key)
         cached_entry = cache.get(key)
         if cached_entry:
