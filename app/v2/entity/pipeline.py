@@ -51,11 +51,10 @@ def cache_24h(foo):
 
     def wrapper(self, object_id, include=None):
         key = str(object_id) + str(include)
-        print(key)
+        now = time.time()
         cached_entry = cache.get(key)
         if cached_entry:
             timestamp = cached_entry['timestamp']
-            now = time.time()
             if (now - timestamp) < 86400:
                 print("Инфа о пайплайне из кэша")
                 return cached_entry['value']
@@ -63,7 +62,7 @@ def cache_24h(foo):
         r = foo(self, object_id, include=None)
 
         cache[key] = {
-            "timestamp": time.now(),
+            "timestamp": now,
             "value": r
         }
 
