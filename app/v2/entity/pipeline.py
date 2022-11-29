@@ -45,7 +45,7 @@ class _StatusField(fields._Field):
         return [Status(data=item) for item in data]
 
 
-def cache_24h(foo: function):
+def cache_24h(foo):
     kwd_mark = object()
     cache = {}
 

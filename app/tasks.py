@@ -246,12 +246,13 @@ def refresh_tokens():
     storage.save_tokens(token, refresh_token)
     # refresh_tokens.send_with_options(delay=43200000)
 
-if SETTINGS.IS_ROOT:
-        init_tokens()
 
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(refresh_tokens.send,
-                          IntervalTrigger(hours=3))
-        scheduler.start()
+if SETTINGS.IS_ROOT:
+    init_tokens()
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(refresh_tokens.send,
+                      IntervalTrigger(hours=3))
+    scheduler.start()
 else:
-        fetch_statuses()
+    fetch_statuses()
