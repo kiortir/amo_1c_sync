@@ -1,5 +1,5 @@
 import httpx
-from settings import ENDPOINT
+from app.settings import ENDPOINT
 
 
 class InteractionManager:
