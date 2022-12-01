@@ -13,7 +13,7 @@ class InteractionManager:
             raise Exception('1с не вернул ответ 200')
         return response
 
-    def send(self, data: dict):
+    def sync(self, data: dict):
         response = self.post(data)
         return response.content.decode("utf-8-sig")
 
