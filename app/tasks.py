@@ -113,7 +113,8 @@ def sendTo1c(data):
 
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
 
-    response_status = manager1C.sync(ujson.dumps(data[data]))
+    hook_logger.info(data)
+    response_status = manager1C.sync(data[data])
 
     hook_logger.info(f'1C: {response_status}')
 
