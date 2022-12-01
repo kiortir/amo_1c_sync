@@ -46,24 +46,28 @@ class DictCacheProvider(BaseCacheProvider):
         self.get_cache()[key] = obj
 
 
-def cache(foo: Callable, provider: Type[BaseCacheProvider], timeout: int = 86400):
+def cache(provider: Type[BaseCacheProvider], timeout: int = 86400):
 
-    def wrapper(*args, **kwargs):
-        key = provider.get_key(*args, **kwargs)
-        cached_entry = provider.get_obj(key)
-        if cached_entry:
-            timestamp = cached_entry['timestamp']
-            if (time.time() - timestamp) < timeout:
-                print('Данные из кеша')
-                return cached_entry['value']
+    def decorator(foo: Callable):
 
-        r = foo(*args, **kwargs)
+        def wrapper(*args, **kwargs):
+            key = provider.get_key(*args, **kwargs)
+            cached_entry = provider.get_obj(key)
+            if cached_entry:
+                timestamp = cached_entry['timestamp']
+                if (time.time() - timestamp) < timeout:
+                    print('Данные из кеша')
+                    return cached_entry['value']
 
-        provider.set_obj(key, r)
-        # cache[key] = {
-        #     "timestamp": now,
-        #     "value": r
-        # }
-        return r
+            r = foo(*args, **kwargs)
 
-    return wrapper
+            provider.set_obj(key, r)
+            # cache[key] = {
+            #     "timestamp": now,
+            #     "value": r
+            # }
+            return r
+
+        return wrapper
+
+    return decorator
