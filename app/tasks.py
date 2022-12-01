@@ -96,7 +96,7 @@ def dispatch(lead_id: int, previous_status=None):
     if cached_key is not None:
         cached_key = cached_key.decode('utf-8')
     if hash_key != cached_key:
-        sendTo1c.send(new_data.json(), status.endpoint)
+        sendTo1c.send(new_data.json())
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 

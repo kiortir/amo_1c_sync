@@ -15,9 +15,6 @@ class BaseCacheProvider(ABC):
     def __init__(self, key_func: Callable):
         self.get_key = key_func
 
-    # @abstractmethod
-    # def get_key(self, obj):
-    #     raise NotImplementedError()
     @abstractmethod
     def get_cache(self):
         raise NotImplementedError()
