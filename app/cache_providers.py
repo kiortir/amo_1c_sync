@@ -23,7 +23,7 @@ class BaseCacheProvider(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_obj(self, key) -> Optional[CacheEntry]:
+    def get_obj(self, key) :
         raise NotImplementedError()
 
     @abstractmethod
@@ -38,7 +38,7 @@ class DictCacheProvider(BaseCacheProvider):
     def get_cache(self):
         return self.cache
 
-    def get_obj(self, key):
+    def get_obj(self, key) -> Optional[CacheEntry]:
         return self.get_cache().get(key)
 
     def set_obj(self, key, value):
@@ -52,12 +52,12 @@ def cache(provider: Type[BaseCacheProvider], timeout: int = 86400):
 
         def wrapper(*args, **kwargs):
             key = provider.get_key(*args, **kwargs)
-            cached_entry = provider.get_obj(key)
-            if cached_entry:
-                timestamp = cached_entry['timestamp']
+            cached_entry: Optional[CacheEntry] = provider.get_obj(key)
+            if cached_entry is not None:
+                timestamp = cached_entry.timestamp
                 if (time.time() - timestamp) < timeout:
                     print('Данные из кеша')
-                    return cached_entry['value']
+                    return cached_entry.value
 
             r = foo(*args, **kwargs)
 
