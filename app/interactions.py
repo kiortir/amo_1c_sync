@@ -1,5 +1,6 @@
 import httpx
 from app.settings import ENDPOINT
+import ujson
 
 
 class InteractionManager:
@@ -13,7 +14,8 @@ class InteractionManager:
             raise Exception('1с не вернул ответ 200')
         return response
 
-    def sync(self, data: dict):
+    def sync(self, jdata: str):
+        data = ujson.loads(jdata)
         response = self.post(data)
         return response.content.decode("utf-8-sig")
 
