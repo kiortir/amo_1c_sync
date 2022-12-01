@@ -2,7 +2,6 @@ import os
 
 import httpx
 import redis
-# from app.v2 import Pipeline
 from typing_extensions import Self
 
 
@@ -91,12 +90,14 @@ ACCOMODATION_DEL_ENDPOINT = os.environ.get('ACCOMODATION_DEL_ENDPOINT')
 DELETE_ALL_ENDPOINT = os.environ.get('DELETE_ALL_ENDPOINT')
 
 
-CREATE_BOOKING = StatusMatch('create_or_update_booking', BOOKING_ENDPOINT or ENDPOINT)
+CREATE_BOOKING = StatusMatch(
+    'create_or_update_booking', BOOKING_ENDPOINT or ENDPOINT)
 # UPDATE_BOOKING = StatusMatch('update_booking', BOOKING_ENDPOINT or ENDPOINT)
 DELETE_BOOKING = StatusMatch(
     'delete_booking', BOOKING_DEL_ENDPOINT or ENDPOINT)
 
-CREATE_STAY = StatusMatch('create_or_update_stay', ACCOMODATION_ENDPOINT or ENDPOINT)
+CREATE_STAY = StatusMatch('create_or_update_stay',
+                          ACCOMODATION_ENDPOINT or ENDPOINT)
 # UPDATE_STAY = StatusMatch('update_stay', BOOKING_ENDPOINT or ENDPOINT)
 DELETE_STAY = StatusMatch('delete_stay', ACCOMODATION_DEL_ENDPOINT or ENDPOINT)
 
@@ -114,37 +115,14 @@ NAME_TO_STATUS = {
 }
 
 
-# def fetch_statuses():
-#     pipelines = Pipeline.objects.all()
-#     for pipeline in pipelines:
-#         statuses = pipeline.statuses
-#         for status in statuses:
-#             if status.name == 'Ошибка брони':
-#                 ERROR_STATUS[pipeline.id] = status.id
-#                 continue
-
-#             status_categories = NAME_TO_STATUS.get(status.name)
-#             if status_categories is not None:
-#                 for status_class_function in status_categories:
-#                     status_class_function(status.id)
-
-
 redis_client = redis.Redis(host=REDIS_HOST, port=6379)
 
 
 IS_ROOT = os.environ.get('IS_ROOT', False) == 'True'
 
-# if IS_ROOT:
-#     tokens.default_token_manager(
-#         client_id=INTEGRATION_ID,
-#         client_secret=SECRET_KEY,
-#         subdomain='usadbavip',
-#         redirect_url=REDIRECT_URI,
-#         storage=tokens.RedisTokensStorage(
-#             redis_client, -1)
-#     )
-#     tokens.default_token_manager.init(code=AUTH_CODE, skip_error=True)
+
 SUBDOMAIN = 'usadbavip'
+
 DATA = {
     "client_id":  INTEGRATION_ID,
     "client_secret": SECRET_KEY,

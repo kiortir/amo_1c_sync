@@ -1,3 +1,4 @@
+from app.cache_providers import cache, DictCacheProvider
 import time
 from .. import fields, manager, model
 from ..interaction import GenericInteraction
@@ -45,38 +46,38 @@ class _StatusField(fields._Field):
         return [Status(data=item) for item in data]
 
 
-def cache_24h(foo):
-    kwd_mark = object()
-    cache = {}
+# def cache_24h(foo):
+#     kwd_mark = object()
+#     cache = {}
 
-    def wrapper(self, object_id, include=None):
-        key = str(object_id) + str(include)
-        now = time.time()
-        cached_entry = cache.get(key)
-        if cached_entry:
-            timestamp = cached_entry['timestamp']
-            if (now - timestamp) < 86400:
-                print("Инфа о пайплайне из кэша")
-                return cached_entry['value']
+#     def wrapper(self, object_id, include=None):
+#         key = str(object_id) + str(include)
+#         now = time.time()
+#         cached_entry = cache.get(key)
+#         if cached_entry:
+#             timestamp = cached_entry['timestamp']
+#             if (now - timestamp) < 86400:
+#                 print("Инфа о пайплайне из кэша")
+#                 return cached_entry['value']
 
-        r = foo(self, object_id, include=None)
+#         r = foo(self, object_id, include=None)
 
-        cache[key] = {
-            "timestamp": now,
-            "value": r
-        }
-        print('Пересчет кеша пайплайна')
+#         cache[key] = {
+#             "timestamp": now,
+#             "value": r
+#         }
+#         print('Пересчет кеша пайплайна')
 
-        return r
+#         return r
 
-    return wrapper
+#     return wrapper
 
 
 class PipelinesInteraction(GenericInteraction):
     path = "leads/pipelines"
     field = "pipelines"
 
-    @cache_24h
+    @cache(provider=DictCacheProvider(lambda self, object_id, include: 'Pipeline' + str(object_id) + str(include)))
     def get(self, object_id, include=None):
         return super().get(object_id, include)
 

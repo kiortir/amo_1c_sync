@@ -6,36 +6,22 @@ from typing import Tuple, Union
 import dramatiq
 import httpx
 import ujson
-from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
 from logzero import setup_logger
 
-try:
-    import app.settings as SETTINGS
-    from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
-                            NoteInteraction)
-    from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
-                              STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client,
-                              send_request)
-    from app.tokens import storage
-    from app.v2 import Company, Pipeline
-    from app.v2.entity import lead
-    from app.v2.exceptions import NotFound, UnAuthorizedException
-except ModuleNotFoundError:
-    import settings as SETTINGS
-    from models import (BoundHook, BoundHookMessage, Contact, Lead,
+import app.settings as SETTINGS
+from app.interactions import manager1C
+from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
                         NoteInteraction)
-    from settings import (DEBUG, ENDPOINT, ERROR_STATUS,
+from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
                           STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client,
                           send_request)
-    from tokens import storage
-    from v2 import Company, Pipeline
-    from v2.entity import lead
-    from v2.exceptions import NotFound, UnAuthorizedException
+from app.tokens import storage
+from app.v2 import Company, Pipeline
+from app.v2.exceptions import NotFound, UnAuthorizedException
 
 HOST = os.environ.get('BROKER_HOST', 'localhost')
 
@@ -69,14 +55,6 @@ def get_sauna_field(sauna_name: str):
             return code
 
 
-def get_status(lead_id: int):
-    response = send_request({
-        "id": lead_id,
-        "status": "blank_status"
-    }, 'http://87.76.13.250:8080/Hotel/hs/Amo/Reservation')
-    print(response)
-
-
 @dramatiq.actor(max_retries=3)
 def dispatch(lead_id: int, previous_status=None):
     try:
@@ -93,6 +71,8 @@ def dispatch(lead_id: int, previous_status=None):
         phone = name = None
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
+
+    # lead
 
     status: Union[StatusMatch, None] = StatusMatch.get_status(
         previous_status, data.status.id)
@@ -120,48 +100,44 @@ def dispatch(lead_id: int, previous_status=None):
         redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
-# @dramatiq.actor
-
-
 @dramatiq.actor(max_retries=3)
-def sendTo1c(data, endpoint):
-    hook_logger.info(data)
+def sendTo1c(data):
     data = ujson.loads(data)
+
     message = CurrentMessage.get_current_message()
     retries = message.options.get('retries', 0)
     lead_id = data["data"]["id"]
     if retries == 3:
         setErrorStatus.send(lead_id, data["pipe"])
         raise HTTPException
+
     hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
-    response = send_request(data["data"], endpoint or ENDPOINT)
-    hook_logger.info(
-        f'Код ответа = {response.status_code}, ответ = {response.text}')
-    # if response.status_code != 200:
-    #     raise HTTPException
-    status = data["data"]["status"]
-    response_status = response.content.decode("utf-8-sig")
+
+    response_status = manager1C.send(data[data])
+    hook_logger.info(f'1C: {response_status}')
+
     if response_status in {'error', 'booking_error'}:
         setErrorStatus.send(lead_id, data["pipe"])
 
+    status = data["data"]["status"]
     note_text = STATUS_TO_DESCRIPTION_MAP[status].get(
         response_status, f'получил непонятный ответ на запрос {status}')
-    hook_logger.info(f'1C: {response_status}')
-    note_data = {
-        "note_type": "common",
-        "params": {
-            # "service": "1С коннектор",
-            "text": note_text
-        }
-    }
-    setNote.send(note_data, lead_id)
+
+    setNote.send(note_text, lead_id)
 
 
 @dramatiq.actor(max_retries=2)
-def setNote(data, lead_id):
+def setNote(note_text, lead_id):
+
+    note_data = {
+        "note_type": "common",
+        "params": {
+            "text": note_text
+        }
+    }
+
     interaction = NoteInteraction(path=f'leads/{lead_id}/notes')
-    interaction.create(data)
-    hook_logger.info('Примечание оставлено')
+    interaction.create(note_data)
 
 
 @dramatiq.actor(max_retries=2)
