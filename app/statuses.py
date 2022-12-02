@@ -24,6 +24,8 @@ class Status:
         self.id = id
         self.name = name
         self.pipeline_id = pipeline_id
+        self.statuses[id] = self
+
 
     @classmethod
     def register(cls, id: int, name: str, pipeline_id: int):
