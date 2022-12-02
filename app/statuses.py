@@ -100,10 +100,10 @@ class delete_all(Condition):
             and status.name in StatusMap.delete
 
 
-statuses = Condition.__subclasses__()
+statuses = [sub() for sub in Condition.__subclasses__()]
 
 
-def match_status(lead_status: int, _1c_status: dict):
+def match_status(lead_status: int, _1c_status):
     for status_entry in statuses:
         m = status_entry.match(lead_status, _1c_status)
         if m: 
