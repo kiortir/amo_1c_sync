@@ -1,4 +1,3 @@
-from app.statuses import Status
 import json
 import os
 from http.client import HTTPException
@@ -16,11 +15,11 @@ from logzero import setup_logger
 
 import app.settings as SETTINGS
 from app.interactions import manager1C
-from app.statuses import statuses, match_status
 from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
                         NoteInteraction)
 from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
                           STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client)
+from app.statuses import Status, match_status, statuses
 from app.tokens import storage
 from app.v2 import Company, Pipeline
 from app.v2.exceptions import NotFound, UnAuthorizedException
