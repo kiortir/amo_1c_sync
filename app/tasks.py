@@ -84,7 +84,7 @@ def dispatch(lead_id: int, previous_status=None):
         return
     py_data = BoundHook(
         id=data.id,
-        status=status.status_code,
+        status=status,
         room=get_sauna_field(getattr(data.sauna, 'value', None)),
         start_booking_date=data.booking_start_datetime,
         end_booking_date=data.booking_end_datetime,
