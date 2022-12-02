@@ -23,6 +23,7 @@ class InteractionManager:
         }
         response = self.post(q)
         json = response.json()
+        print(json)
         # parsed_json = {key: value != 'none' for key, value in json.items()}
         if json.get('stay') != 'none':
             return 'stay'

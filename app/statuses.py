@@ -56,6 +56,7 @@ class create_or_update_booking(Condition):
         status = self.get_amo_status(lead_status)
         if not status:
             return False
+        print(status.name, StatusMap.booking, _1c_status)
         return status.name in StatusMap.booking and _1c_status != 'stay'
 
 
