@@ -1,3 +1,4 @@
+from app.statuses import Status
 import json
 import os
 from http.client import HTTPException
@@ -15,11 +16,11 @@ from logzero import setup_logger
 
 import app.settings as SETTINGS
 from app.interactions import manager1C
+from app.statuses import statuses, match_status
 from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
                         NoteInteraction)
 from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
-                          STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client,
-                          send_request)
+                          STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client)
 from app.tokens import storage
 from app.v2 import Company, Pipeline
 from app.v2.exceptions import NotFound, UnAuthorizedException
@@ -73,10 +74,13 @@ def dispatch(lead_id: int, previous_status=None):
 
     hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
 
-    # lead
+    _1c_status = manager1C.get_reservation_status(lead_id)
+    # previous_status =
 
-    status: Union[StatusMatch, None] = StatusMatch.get_status(
-        previous_status, data.status.id)
+    # status: Union[StatusMatch, None] = StatusMatch.get_status(
+    #     previous_status, data.status.id)
+    status = match_status(data.status.id, _1c_status)
+
     if status is None:
         return
     py_data = BoundHook(
@@ -183,6 +187,21 @@ def init_tokens(skip_error=False):
             # refresh_tokens.send_with_options(delay=7200000)
 
 
+# def fetch_statuses():
+    # pipelines = Pipeline.objects.all()
+    # for pipeline in pipelines:
+    #     statuses = pipeline.statuses
+    #     for status in statuses:
+    #         if status.name == 'Ошибка брони':
+    #             ERROR_STATUS[pipeline.id] = status.id
+    #             continue
+
+    #         status_categories = SETTINGS.NAME_TO_STATUS.get(status.name)
+    #         if status_categories is not None:
+    #             for status_class_function in status_categories:
+    #                 status_class_function(status.id)
+
+
 def fetch_statuses():
     pipelines = Pipeline.objects.all()
     for pipeline in pipelines:
@@ -191,11 +210,15 @@ def fetch_statuses():
             if status.name == 'Ошибка брони':
                 ERROR_STATUS[pipeline.id] = status.id
                 continue
-
-            status_categories = SETTINGS.NAME_TO_STATUS.get(status.name)
-            if status_categories is not None:
-                for status_class_function in status_categories:
-                    status_class_function(status.id)
+            Status(
+                status.id,
+                status.name,
+                pipeline.id
+            )
+            # status_categories = SETTINGS.NAME_TO_STATUS.get(status.name)
+            # if status_categories is not None:
+            #     for status_class_function in status_categories:
+            #         status_class_function(status.id)
 
 
 def _get_new_tokens() -> Tuple[str, str]:

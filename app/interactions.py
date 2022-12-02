@@ -1,7 +1,5 @@
 import httpx
-from app.settings import ENDPOINT
-import ujson
-
+from settings import ENDPOINT
 
 class InteractionManager:
 
@@ -25,8 +23,19 @@ class InteractionManager:
         }
         response = self.post(q)
         json = response.json()
-        parsed_json = {key: value != 'none' for key, value in json.items()}
-        return parsed_json
-
+        # parsed_json = {key: value != 'none' for key, value in json.items()}
+        if json.get('stay') != 'none':
+            return 'stay'
+        if json.get('booking') != 'none':
+            return 'booking'
+        return None
 
 manager1C = InteractionManager()
+
+
+if __name__ == '__main__':
+    import time
+    start = time.perf_counter()
+    manager1C.get_reservation_status(10650669)
+    end = time.perf_counter()
+    print(end-start)

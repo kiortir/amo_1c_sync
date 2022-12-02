@@ -22,13 +22,24 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 
 ERROR_STATUS = {}
 
-ENDPOINT = os.environ.get('ENDPOINT')
-request_client = httpx.Client()
+ENDPOINT = os.environ.get('ENDPOINT', 'https://google.com')
+# request_client = httpx.Client()
+
+_1c_repr_map = {
+    'booking': {
+        'Устная бронь',
+        'Бронь оплачена'
+    },
+    'stay': {
+        'Проживание'
+    }
+}
 
 
-def send_request(data, endpoint):
-    # print(data)
-    return request_client.post(endpoint, json=data, timeout=120000)
+def _1c_repr(status_name: str):
+    for _1c_status, statuses in _1c_repr_map.items():
+        if status_name in statuses:
+            return _1c_status
 
 
 class StatusMatch:
@@ -39,11 +50,13 @@ class StatusMatch:
         cls.statuses.append(instance)
         return instance
 
-    def __init__(self, status_code: str, status_endpoint: str):
+    def __init__(self, status_code: str, status_endpoint: str, _1c_status=None):
         self.status_code = status_code
         self.status_set: set[int] = set()
         self.previous_status_set: set[int] = set()
         self.endpoint = status_endpoint
+
+        # self._1c_status = _1c_status
 
     def match(self, previous_status, status):
         total_match = 0
@@ -64,7 +77,6 @@ class StatusMatch:
     @classmethod
     def get_status(cls, previous_status_id: int, status_id: int):
         max_match_value = 0
-        max_match_status_code = None
         max_match_status = None
         for status in cls.statuses:
             match_value = status.match(previous_status_id, status_id)
@@ -83,29 +95,18 @@ class StatusMatch:
         self.status_set.add(status_id)
 
 
-BOOKING_ENDPOINT = os.environ.get('BOOKING_ENDPOINT')
-BOOKING_DEL_ENDPOINT = os.environ.get('BOOKING_DEL_ENDPOINT')
-ACCOMODATION_ENDPOINT = os.environ.get('ACCOMODATION_ENDPOINT')
-ACCOMODATION_DEL_ENDPOINT = os.environ.get('ACCOMODATION_DEL_ENDPOINT')
-DELETE_ALL_ENDPOINT = os.environ.get('DELETE_ALL_ENDPOINT')
-
-
 CREATE_BOOKING = StatusMatch(
-    'create_or_update_booking', BOOKING_ENDPOINT or ENDPOINT)
-# UPDATE_BOOKING = StatusMatch('update_booking', BOOKING_ENDPOINT or ENDPOINT)
+    'create_or_update_booking', ENDPOINT)
 DELETE_BOOKING = StatusMatch(
-    'delete_booking', BOOKING_DEL_ENDPOINT or ENDPOINT)
-
+    'delete_booking', ENDPOINT)
 CREATE_STAY = StatusMatch('create_or_update_stay',
-                          ACCOMODATION_ENDPOINT or ENDPOINT)
-# UPDATE_STAY = StatusMatch('update_stay', BOOKING_ENDPOINT or ENDPOINT)
-DELETE_STAY = StatusMatch('delete_stay', ACCOMODATION_DEL_ENDPOINT or ENDPOINT)
+                          ENDPOINT)
+DELETE_STAY = StatusMatch('delete_stay', ENDPOINT)
 
-DELETE_ALL = StatusMatch('delete_all', DELETE_ALL_ENDPOINT or ENDPOINT)
+DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
 
 
 NAME_TO_STATUS = {
-    # None: (UPDATE_BOOKING.previous, UPDATE_STAY.previous),
     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
