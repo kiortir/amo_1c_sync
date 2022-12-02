@@ -105,6 +105,7 @@ statuses = [sub() for sub in Condition.__subclasses__()]
 
 
 def match_status(lead_status: int, _1c_status):
+    print(lead_status, _1c_status, statuses)
     for status_entry in statuses:
         m = status_entry.match(lead_status, _1c_status)
         if m: 
