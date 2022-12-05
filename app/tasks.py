@@ -39,7 +39,7 @@ hook_logger = setup_logger(name='hook')
 backend = RedisBackend(
     client=redis_client
 )
-amo_limiter = BucketRateLimiter(backend, "amo_request_limit", limit=6, bucket=1_000)
+amo_limiter = BucketRateLimiter(backend, "amo_request_limit", limit=3, bucket=1_000)
 
 SAUNA_NAME_MAP = {
     "Альпийская": "ЦБ000027",

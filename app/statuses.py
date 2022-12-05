@@ -86,9 +86,9 @@ class delete_booking(Condition):
         if status.name in StatusMap.ignore:
             return
         return _1c_status == 'booking' \
-            and (status.name not in StatusMap.booking
+            and ((status.name not in StatusMap.booking
                  and status.name not in StatusMap.stay) \
-            or status.name in StatusMap.delete
+            or status.name in StatusMap.delete)
 
 
 class delete_stay(Condition):
