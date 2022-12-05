@@ -64,7 +64,8 @@ def get_sauna_field(sauna_name: str):
 
 @dramatiq.actor(max_retries=3)
 def dispatch(lead_id: int):
-    with redis_client.lock(str(lead_id)):
+    hook_logger.info(lead_id)
+    with redis_client.lock('lock' + str(lead_id)):
         try:
             with amo_limiter.acquire():
                 data: Lead = Lead.objects.get(lead_id)
