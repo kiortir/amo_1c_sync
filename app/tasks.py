@@ -1,4 +1,3 @@
-import json
 import os
 from http.client import HTTPException
 from sched import scheduler
@@ -11,15 +10,17 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from dramatiq.brokers.rabbitmq import RabbitmqBroker
 from dramatiq.middleware import CurrentMessage
+from dramatiq.rate_limits.backends import RedisBackend
+from dramatiq.rate_limits.bucket import BucketRateLimiter
+
 from logzero import setup_logger
 
 import app.settings as SETTINGS
 from app.interactions import manager1C
 from app.models import (BoundHook, BoundHookMessage, Contact, Lead,
                         NoteInteraction)
-from app.settings import (DEBUG, ENDPOINT, ERROR_STATUS,
-                          STATUS_TO_DESCRIPTION_MAP, StatusMatch, redis_client)
-from app.statuses import Status, match_status, statuses
+from app.settings import ERROR_STATUS, STATUS_TO_DESCRIPTION_MAP, redis_client
+from app.statuses import Status, match_status
 from app.tokens import storage
 from app.v2 import Company, Pipeline
 from app.v2.exceptions import NotFound, UnAuthorizedException
@@ -33,6 +34,12 @@ dramatiq.set_broker(rabbitmq_broker)
 amo_logger = setup_logger(
     name='amo', logfile='amo_logs.json', maxBytes=1e6, backupCount=3)
 hook_logger = setup_logger(name='hook')
+
+
+backend = RedisBackend(
+    client=redis_client
+)
+amo_limiter = BucketRateLimiter(backend, "amo_request_limit", limit=6, bucket=1_000)
 
 SAUNA_NAME_MAP = {
     "Альпийская": "ЦБ000027",
@@ -55,53 +62,51 @@ def get_sauna_field(sauna_name: str):
         if sauna_name.lower().startswith(type_.lower()):
             return code
 
-
 @dramatiq.actor(max_retries=3)
-def dispatch(lead_id: int, previous_status=None):
-    try:
-        data: Lead = Lead.objects.get(lead_id)
-    except NotFound:
-        return
+def dispatch(lead_id: int):
+    with redis_client.lock(str(lead_id)):
+        try:
+            with amo_limiter.acquire():
+                data: Lead = Lead.objects.get(lead_id)
+        except NotFound:
+            return
 
-    try:
-        contact: Contact = next(data.contacts.__iter__())
-        phone_str = ''.join([s for s in contact.phone if s.isdigit()])
-        phone = int(phone_str) if phone_str else None
-        name = contact.name
-    except StopIteration:
-        phone = name = None
+        try:
+            with amo_limiter.acquire():
+                contact: Contact = next(data.contacts.__iter__())
+                phone_str = ''.join([s for s in contact.phone if s.isdigit()])
+                phone = int(phone_str) if phone_str else None
+                name = contact.name
+        except StopIteration:
+            phone = name = None
 
-    hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
+        hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
 
-    _1c_status = manager1C.get_reservation_status(lead_id)
-    # previous_status =
+        _1c_status = manager1C.get_reservation_status(lead_id)
+        status = match_status(data.status.id, _1c_status)
 
-    # status: Union[StatusMatch, None] = StatusMatch.get_status(
-    #     previous_status, data.status.id)
-    status = match_status(data.status.id, _1c_status)
-
-    if status is None:
-        return
-    py_data = BoundHook(
-        id=data.id,
-        status=status,
-        room=get_sauna_field(getattr(data.sauna, 'value', None)),
-        start_booking_date=data.booking_start_datetime,
-        end_booking_date=data.booking_end_datetime,
-        summ_pay=data.advance_payment,
-        bonus_card=getattr(data.bonus_card, 'value', None),
-        name=name,
-        phone=phone
-    )
-    new_data = BoundHookMessage(pipe=data.pipeline.id, data=py_data)
-    hash_key = new_data.hash
-    hash_lookup = str(data.id)
-    cached_key = redis_client.get(hash_lookup)
-    if cached_key is not None:
-        cached_key = cached_key.decode('utf-8')
-    if hash_key != cached_key:
-        sendTo1c.send(new_data.json())
-        redis_client.set(hash_lookup, hash_key, ex=86400)
+        if status is None:
+            return
+        py_data = BoundHook(
+            id=data.id,
+            status=status,
+            room=get_sauna_field(getattr(data.sauna, 'value', None)),
+            start_booking_date=data.booking_start_datetime,
+            end_booking_date=data.booking_end_datetime,
+            summ_pay=data.advance_payment,
+            bonus_card=getattr(data.bonus_card, 'value', None),
+            name=name,
+            phone=phone
+        )
+        new_data = BoundHookMessage(pipe=data.pipeline.id, data=py_data)
+        hash_key = new_data.hash
+        hash_lookup = str(data.id)
+        cached_key = redis_client.get(hash_lookup)
+        if cached_key is not None:
+            cached_key = cached_key.decode('utf-8')
+        if hash_key != cached_key:
+            sendTo1c.send(new_data.json())
+            redis_client.set(hash_lookup, hash_key, ex=86400)
 
 
 @dramatiq.actor(max_retries=3)
@@ -134,28 +139,29 @@ def sendTo1c(data):
 
 @dramatiq.actor(max_retries=2)
 def setNote(note_text, lead_id):
-
-    note_data = {
-        "note_type": "common",
-        "params": {
-            "text": note_text
+    with amo_limiter.acquire():
+        note_data = {
+            "note_type": "common",
+            "params": {
+                "text": note_text
+            }
         }
-    }
 
-    interaction = NoteInteraction(path=f'leads/{lead_id}/notes')
-    interaction.create(note_data)
+        interaction = NoteInteraction(path=f'leads/{lead_id}/notes')
+        interaction.create(note_data)
 
 
 @dramatiq.actor(max_retries=2)
 def setErrorStatus(lead_id: int, pipeline_id: int):
-    new_status = ERROR_STATUS.get(pipeline_id)
-    hook_logger.info(f'Ошибка брони, {lead_id=}')
-    if new_status is not None:
-        Lead.objects.update(
-            lead_id,
-            {
-                "status_id": new_status
-            }),
+    with amo_limiter.acquire():
+        new_status = ERROR_STATUS.get(pipeline_id)
+        hook_logger.info(f'Ошибка брони, {lead_id=}')
+        if new_status is not None:
+            Lead.objects.update(
+                lead_id,
+                {
+                    "status_id": new_status
+                }),
 
 
 def init_tokens(skip_error=False):

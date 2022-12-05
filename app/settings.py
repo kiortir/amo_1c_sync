@@ -1,6 +1,5 @@
 import os
 
-import httpx
 import redis
 from typing_extensions import Self
 
@@ -23,7 +22,6 @@ REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
 ERROR_STATUS = {}
 
 ENDPOINT = os.environ.get('ENDPOINT', 'https://google.com')
-# request_client = httpx.Client()
 
 _1c_repr_map = {
     'booking': {
