@@ -1,5 +1,6 @@
 import httpx
 from app.settings import ENDPOINT
+from app.tasks import hook_logger
 
 class InteractionManager:
 
@@ -8,6 +9,7 @@ class InteractionManager:
 
     def post(self, data: dict):
         response = self.client.post(ENDPOINT, json=data, timeout=120000)
+        hook_logger.info(response.text)
         if response.status_code != 200:
             raise Exception('1с не вернул ответ 200')
         return response
