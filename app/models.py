@@ -51,17 +51,17 @@ class Field0(BaseModel):
     status_id: int
     old_status_id: Optional[int]
     price: str
-    responsible_user_id: str
+    responsible_user_id: Optional[str]
     last_modified: int
-    modified_user_id: int
-    created_user_id: int
+    modified_user_id: Optional[int]
+    created_user_id: Optional[int]
     date_create: int
     created_at: Optional[int]
     updated_at: Optional[int]
 
     pipeline_id: Optional[int]
     tags: Optional[dict]
-    account_id: int
+    account_id: Optional[int]
     custom_fields: Optional[list[CustomField]]
 
 
