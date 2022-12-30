@@ -54,8 +54,6 @@ class StatusMatch:
         self.previous_status_set: set[int] = set()
         self.endpoint = status_endpoint
 
-        # self._1c_status = _1c_status
-
     def match(self, previous_status, status):
         total_match = 0
 
@@ -80,7 +78,7 @@ class StatusMatch:
             match_value = status.match(previous_status_id, status_id)
             if match_value > max_match_value:
                 max_match_value = match_value
-                max_match_status_code = status.status_code
+                # max_match_status_code = status.status_code
 
                 max_match_status = status
 
@@ -93,25 +91,25 @@ class StatusMatch:
         self.status_set.add(status_id)
 
 
-CREATE_BOOKING = StatusMatch(
-    'create_or_update_booking', ENDPOINT)
-DELETE_BOOKING = StatusMatch(
-    'delete_booking', ENDPOINT)
-CREATE_STAY = StatusMatch('create_or_update_stay',
-                          ENDPOINT)
-DELETE_STAY = StatusMatch('delete_stay', ENDPOINT)
+# CREATE_BOOKING = StatusMatch(
+#     'create_or_update_booking', ENDPOINT)
+# DELETE_BOOKING = StatusMatch(
+#     'delete_booking', ENDPOINT)
+# CREATE_STAY = StatusMatch('create_or_update_stay',
+#                           ENDPOINT)
+# DELETE_STAY = StatusMatch('delete_stay', ENDPOINT)
 
-DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
+# DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
 
 
-NAME_TO_STATUS = {
-    'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
-    'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
-    'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
-    'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
-    'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
-    'Закрыто и не реализовано': (DELETE_ALL.current,),
-}
+# NAME_TO_STATUS = {
+#     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
+#     'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
+#     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
+#     'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
+#     'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
+#     'Закрыто и не реализовано': (DELETE_ALL.current,),
+# }
 
 
 redis_client = redis.Redis(host=REDIS_HOST, port=6379)

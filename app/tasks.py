@@ -1,3 +1,4 @@
+import datetime
 import os
 from http.client import HTTPException
 from sched import scheduler
@@ -64,7 +65,7 @@ def get_sauna_field(sauna_name: str):
 
 @dramatiq.actor(max_retries=3)
 def dispatch(lead_id: int):
-    hook_logger.info(lead_id)
+    # hook_logger.info(lead_id)
     with redis_client.lock('lock' + str(lead_id)):
         try:
             with amo_limiter.acquire():
@@ -81,7 +82,7 @@ def dispatch(lead_id: int):
         except StopIteration:
             phone = name = None
 
-        hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
+        # hook_logger.info(f'status:{data.status.id}, pipe: {data.pipeline.id}')
 
         _1c_status = manager1C.get_reservation_status(lead_id)
         status = match_status(data.status.id, _1c_status)
@@ -121,12 +122,19 @@ def sendTo1c(data):
         setErrorStatus.send(lead_id, data["pipe"])
         raise HTTPException
 
-    hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
+    # hook_logger.info(f'Отправляем информацию по лиду {data["data"]["id"]}')
 
-    hook_logger.info(data)
+    # hook_logger.info(data)
+    request_time = datetime.datetime.now()
     response_status = manager1C.sync(data['data'])
 
-    hook_logger.info(f'1C: {response_status}')
+    # hook_logger.info(f'1C: {response_status}')
+    hook_logger.info({
+        'request_datetime': request_time,
+        'lead_id': lead_id,
+        'request_status': data['data']['status'],
+        'response': response_status
+    })
 
     if response_status in {'error', 'booking_error'}:
         setErrorStatus.send(lead_id, data["pipe"])
@@ -156,7 +164,7 @@ def setNote(note_text, lead_id):
 def setErrorStatus(lead_id: int, pipeline_id: int):
     with amo_limiter.acquire():
         new_status = ERROR_STATUS.get(pipeline_id)
-        hook_logger.info(f'Ошибка брони, {lead_id=}')
+        # hook_logger.info(f'Ошибка брони, {lead_id=}')
         if new_status is not None:
             Lead.objects.update(
                 lead_id,
@@ -249,7 +257,7 @@ def _get_new_tokens() -> Tuple[str, str]:
 
 @dramatiq.actor
 def refresh_tokens():
-    hook_logger.info('Обновляем токены')
+    # hook_logger.info('Обновляем токены')
     token, refresh_token = _get_new_tokens()
     storage.save_tokens(token, refresh_token)
     # refresh_tokens.send_with_options(delay=43200000)
