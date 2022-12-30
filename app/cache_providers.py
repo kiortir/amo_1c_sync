@@ -53,7 +53,6 @@ def cache(provider: Type[BaseCacheProvider], timeout: int = 86400):
             if cached_entry is not None:
                 timestamp = cached_entry.timestamp
                 if (time.time() - timestamp) < timeout:
-                    print('Данные из кеша')
                     return cached_entry.value
 
             r = foo(*args, **kwargs)
