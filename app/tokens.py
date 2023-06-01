@@ -5,11 +5,9 @@ import httpx
 from amocrm.v2 import exceptions, tokens
 
 try:
-    import app.settings as SETTINGS
-    from app.settings import DATA, redis_client
+    from app.settings import redis_client
 except ModuleNotFoundError:
-    import settings as SETTINGS
-    from settings import DATA, redis_client
+    from settings import redis_client
 
 
 class TokensStorage:
@@ -49,7 +47,6 @@ class RedisTokensStorage(TokensStorage):
 
 
 class TokenManager(tokens.TokenManager):
-
     _instance = None
     _lock = threading.Lock()
 
@@ -71,12 +68,15 @@ class TokenManager(tokens.TokenManager):
             "redirect_uri": self._redirect_url,
         }
         response = httpx.post(
-            "https://{}.amocrm.ru/oauth2/access_token".format(self.subdomain), json=body)
+            "https://{}.amocrm.ru/oauth2/access_token".format(self.subdomain),
+            json=body,
+        )
         if response.status_code == 200:
             data = response.json()
             return data["access_token"], data["refresh_token"]
         raise EnvironmentError(
-            "Can't refresh token {}".format(response.json()))
+            "Can't refresh token {}".format(response.json())
+        )
 
     def update_tokens(self):
         token, refresh_token = self._get_new_tokens()
@@ -86,7 +86,8 @@ class TokenManager(tokens.TokenManager):
         token = self._storage.get_access_token()
         if not token:
             raise exceptions.NoToken(
-                "You need to init tokens with code by 'init' method")
+                "You need to init tokens with code by 'init' method"
+            )
         return token
 
     def _is_expire(token: str):

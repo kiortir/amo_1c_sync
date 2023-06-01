@@ -6,27 +6,20 @@ services:
     image: traefik:v2.8
     container_name: traefik
 
-    # Enables the web UI and tells Traefik to listen to docker
-    # command: --api.insecure=true --providers.docker
     ports:
-      # The HTTP port
-      - "80:80"
+      - 80:80
       - 443:443
-      # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
     volumes:
-      # So that Traefik can listen to the Docker events
       - /etc/localtime:/etc/localtime:ro
-
       - /var/run/docker.sock:/var/run/docker.sock
       - "./services/traefik/traefik.dev.yml:/etc/traefik/traefik.yml"
       - ./services/traefik/acme.json:/acme.json
     restart: always
 
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.entrypoints=https"
-      - traefik.http.routers.traefik.rule=Host(`usadba.rockmedia.dev`) && Path(`/traefik`)
+      - traefik.enable=true
+      - traefik.http.routers.traefik.entrypoints=https
+      - traefik.http.routers.traefik.rule=Host(`usadba.rockmedia.dev`) && PathPrefix(`/traefik`)
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -47,35 +40,32 @@ services:
   application:
     image: amo1csync:latest
     container_name: fastapi
-    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
     depends_on:
       - rabbitmq
       - redis
     build:
-       context: ./
-    command: gunicorn app.main:app --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
-    # ports:
-    #     - 80:80
+      context: ./
+    command: gunicorn app.main:app --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker
     volumes:
       - .:/app
     env_file:
       - sync.env
     restart: always
     environment:
-          IS_ROOT: 'True'
-          BROKER_HOST: rabbitmq
-          REDIS_HOST: redis
+      IS_ROOT: 'True'
+      BROKER_HOST: rabbitmq
+      REDIS_HOST: redis
     labels:
-      - "traefik.enable=true"
+      - traefik.enable=true
       - traefik.http.routers.fastapi.rule=Host(`usadba.rockmedia.dev`)
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=letsEncrypt
-    # ports:
-    #   - "8080:80"
+      - traefik.http.services.fastapi-traefik.loadbalancer.server.port=8000
 
   worker:
     image: amo1csync:latest
+    build:
+      context: ./
     container_name: worker
     command: dramatiq app.tasks
     restart: always
@@ -91,9 +81,8 @@ services:
       - redis
 
   redis:
-      image: "redis:7.0.5"
-      container_name: redis
-
-      volumes:
-        - .services/redis/redis-data:/var/lib/redis
-        - .services/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    image: "redis:7.0.5"
+    container_name: redis
+    volumes:
+      - .services/redis/redis-data:/var/lib/redis
+      - .services/redis/redis.conf:/usr/local/etc/redis/redis.conf

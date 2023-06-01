@@ -2,35 +2,58 @@ import os
 
 import redis
 from typing_extensions import Self
+from pydantic import BaseSettings
 
 
-DEBUG = os.environ.get('DEBUG', 'TRUE') == 'TRUE'
+DEBUG = os.environ.get("DEBUG", "TRUE") == "TRUE"
 
-if DEBUG:
-    from dotenv import load_dotenv
-    load_dotenv()
+# if DEBUG:
+#     from dotenv import load_dotenv
+#     load_dotenv()
 
-ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY')
-INTEGRATION_ID = os.environ.get('INTEGRATION_ID')
+# ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
+# INTEGRATION_ID = os.environ.get("INTEGRATION_ID")
 
-BASE_URL = os.environ.get('BASE_URL')
-SECRET_KEY = os.environ.get('SECRET_KEY')
-AUTH_CODE = os.environ.get('AUTH_CODE')
-REDIRECT_URI = os.environ.get('REDIRECT_URI')
-REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+# BASE_URL = os.environ.get("BASE_URL")
+# SECRET_KEY = os.environ.get("SECRET_KEY")
+# AUTH_CODE = os.environ.get("AUTH_CODE")
+# REDIRECT_URI = os.environ.get("REDIRECT_URI")
+# REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+# ENDPOINT = os.environ.get("ENDPOINT", "https://google.com")
 
 ERROR_STATUS = {}
 
-ENDPOINT = os.environ.get('ENDPOINT', 'https://google.com')
+
+class Settings(BaseSettings):
+    debug: bool = False
+    is_root: bool = False
+
+base_settings = Settings
+
+class AmoSettings(BaseSettings):
+    encryption_key: str
+    integration_id: str
+    base_url: str
+    secret_key: str
+    redirect_uri: str
+
+    auth_code: str
+
+
+class RedisSettings(BaseSettings):
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+
+
+class UsadbaSettings(BaseSettings):
+    endpoint: str
+
+
+usadba_settings = UsadbaSettings()
 
 _1c_repr_map = {
-    'booking': {
-        'Устная бронь',
-        'Бронь оплачена'
-    },
-    'stay': {
-        'Проживание'
-    }
+    "booking": {"Устная бронь", "Бронь оплачена"},
+    "stay": {"Проживание"},
 }
 
 
@@ -41,14 +64,16 @@ def _1c_repr(status_name: str):
 
 
 class StatusMatch:
-    statuses: list['StatusMatch'] = []
+    statuses: list["StatusMatch"] = []
 
     def __new__(cls: type[Self], *args, **kwargs) -> Self:
         instance = super().__new__(cls)
         cls.statuses.append(instance)
         return instance
 
-    def __init__(self, status_code: str, status_endpoint: str, _1c_status=None):
+    def __init__(
+        self, status_code: str, status_endpoint: str, _1c_status=None
+    ):
         self.status_code = status_code
         self.status_set: set[int] = set()
         self.previous_status_set: set[int] = set()
@@ -91,74 +116,53 @@ class StatusMatch:
         self.status_set.add(status_id)
 
 
-# CREATE_BOOKING = StatusMatch(
-#     'create_or_update_booking', ENDPOINT)
-# DELETE_BOOKING = StatusMatch(
-#     'delete_booking', ENDPOINT)
-# CREATE_STAY = StatusMatch('create_or_update_stay',
-#                           ENDPOINT)
-# DELETE_STAY = StatusMatch('delete_stay', ENDPOINT)
-
-# DELETE_ALL = StatusMatch('delete_all', ENDPOINT)
+redis_settings = RedisSettings()
+redis_client = redis.Redis(
+    host=redis_settings.redis_host, port=redis_settings.redis_port
+)
 
 
-# NAME_TO_STATUS = {
-#     'Устная бронь': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
-#     'Бронь оплачена': (CREATE_BOOKING.current, DELETE_STAY.current, DELETE_BOOKING.previous),
-#     'Проживание': (CREATE_STAY.current, DELETE_STAY.previous),
-#     'Не обработано': (DELETE_STAY.current, DELETE_BOOKING.current),
-#     'Принимает решение': (DELETE_STAY.current, DELETE_BOOKING.current),
-#     'Закрыто и не реализовано': (DELETE_ALL.current,),
-# }
+SUBDOMAIN = "usadbavip"
 
-
-redis_client = redis.Redis(host=REDIS_HOST, port=6379)
-
-
-IS_ROOT = os.environ.get('IS_ROOT', False) == 'True'
-
-
-SUBDOMAIN = 'usadbavip'
-
+amo_settings = AmoSettings()
 DATA = {
-    "client_id":  INTEGRATION_ID,
-    "client_secret": SECRET_KEY,
-    "subdomain":  SUBDOMAIN,
-    "redirect_url":  REDIRECT_URI,
+    "client_id": amo_settings.integration_id,
+    "client_secret": amo_settings.secret_key,
+    "subdomain": SUBDOMAIN,
+    "redirect_url": amo_settings.redirect_uri,
 }
 
 STATUS_TO_DESCRIPTION_MAP = {
-    'create_or_update_booking': {
-        'create': 'бланк брони создан в 1С',
-        'error': 'ошибка при создании бланка брони в 1С',
-        'update': 'бланк брони обновлен в 1С',
-        'error_update': 'ошибка обновления бланка брони в 1С',
+    "create_or_update_booking": {
+        "create": "бланк брони создан в 1С",
+        "error": "ошибка при создании бланка брони в 1С",
+        "update": "бланк брони обновлен в 1С",
+        "error_update": "ошибка обновления бланка брони в 1С",
     },
     "update_booking": {
-        'ok': 'бланк брони обновлен в 1С',
-        'error': 'ошибка при обновлении бланка брони в 1С',
+        "ok": "бланк брони обновлен в 1С",
+        "error": "ошибка при обновлении бланка брони в 1С",
     },
-    'delete_booking': {
-        'ok': 'бланк брони удален в 1С',
-        'error': 'ошибка при удалении бланка брони в 1С',
+    "delete_booking": {
+        "ok": "бланк брони удален в 1С",
+        "error": "ошибка при удалении бланка брони в 1С",
     },
-    'create_or_update_stay': {
-        'ok': 'бланк проживания создан в 1С',
-        'error': 'ошибка связи с 1С при создании бланка проживания',
-        'update': 'бланк брони обновлен в 1С',
-        'error_stay': 'ошибка обновления бланка брони в 1С',
-
+    "create_or_update_stay": {
+        "ok": "бланк проживания создан в 1С",
+        "error": "ошибка связи с 1С при создании бланка проживания",
+        "update": "бланк брони обновлен в 1С",
+        "error_stay": "ошибка обновления бланка брони в 1С",
     },
     "update_stay": {
-        'ok': 'бланк проживания обновлен в 1С',
-        'error': 'ошибка при обновлении бланка проживания в 1С',
+        "ok": "бланк проживания обновлен в 1С",
+        "error": "ошибка при обновлении бланка проживания в 1С",
     },
-    'delete_stay': {
-        'ok': 'бланк проживания удален в 1С',
-        'error': 'ошибка при удалении бланка проживания в 1С',
+    "delete_stay": {
+        "ok": "бланк проживания удален в 1С",
+        "error": "ошибка при удалении бланка проживания в 1С",
     },
-    'delete_all': {
-        'ok': 'бланк брони и бланк проживания удалены в 1С',
-        'error': 'ошибка при удалении бланка брони и проживания в 1С',
-    }
+    "delete_all": {
+        "ok": "бланк брони и бланк проживания удалены в 1С",
+        "error": "ошибка при удалении бланка брони и проживания в 1С",
+    },
 }
