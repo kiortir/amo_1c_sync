@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     debug: bool = False
     is_root: bool = False
 
-base_settings = Settings
+
+base_settings = Settings()
+
 
 class AmoSettings(BaseSettings):
     encryption_key: str
