@@ -1,0 +1,6 @@
+*.env
+.venv/
+.mypy_cache/
+.services/
+__pycache__/
+volumes/

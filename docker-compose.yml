@@ -1,0 +1,147 @@
+version: "3.7"
+
+name: 1c_connector
+
+services:
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+
+    # Enables the web UI and tells Traefik to listen to docker
+    # command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - 80:80
+      - 443:443
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - ./service/traefik/traefik.dev.yml:/etc/traefik/traefik.yml
+      - ./service/traefik/acme.json:/acme.json
+
+    restart: always
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.entrypoints=https
+      - traefik.http.routers.traefik.rule=PathPrefix(`/traefik`)
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsEncrypt
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.services.traefik-traefik.loadbalancer.server.port=8080
+
+  connector:
+    command: uvicorn asgi:app --host 0.0.0.0 --port 8000
+    container_name: connector
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    build:
+      context: ./
+
+    # command: gunicorn service.main:service --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/service
+
+    env_file:
+      - .sync.env
+
+    restart: always
+
+    environment:
+      REDIS_HOST: redis
+      rabbit_host: rabbitmq
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.connector.entrypoints=https
+      - traefik.http.routers.connector.rule=PathPrefix("/connector")
+      - traefik.http.routers.connector.tls=true
+      - traefik.http.routers.connector.tls.certresolver=letsEncrypt
+      - traefik.http.services.connector.loadbalancer.server.port=8000
+
+  worker:
+    command: python worker.py
+    container_name: worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    build:
+      context: ./
+    environment:
+      REDIS_HOST: redis
+      rabbit_host: rabbitmq
+
+  redis:
+    image: "redis:7.0.11"
+    container_name: redis
+    # ports:
+    #   - 6379:6379
+
+    volumes:
+      - .services/redis/redis-data:/var/lib/redis
+      - .services/redis/redis.conf:/usr/local/etc/redis/redis.conf
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+
+  loki:
+    image: grafana/loki:2.6.1
+    # ports:
+    #   - "3100"
+    volumes:
+      # directory must be created first, with uid:gid 10001:10001
+      - ./volumes/loki:/loki
+
+  promtail:
+    image: grafana/promtail:2.6.1
+    volumes:
+      # custom config will read logs from the containers of
+      # this project
+      - ./loki/promtail-config.yaml:/etc/promtail/config.yml
+      # to read container labels and logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers
+
+  # will be available at http://127.0.0.1:3000
+  # default credentials: admin/admin
+  grafana:
+    image: grafana/grafana:9.2.2
+    ports:
+      - "3000:3000"
+    volumes:
+      # directory must be created first, with uid:gid 472:472
+      - ./volumes/grafana:/var/lib/grafana
+      # automatically configure the loki datasource
+      - ./loki/grafana/provisioning/:/etc/grafana/provisioning/
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.graphana.entrypoints=https
+      - traefik.http.routers.graphana.rule=PathPrefix("/graphana")
+      - traefik.http.routers.graphana.tls=true
+      - traefik.http.routers.graphana.tls.certresolver=letsEncrypt
+      - traefik.http.services.graphana-service.loadbalancer.server.port=3000
+
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    # ports:
+    #   - 15672:15672
+    #   - 5672:5672
+    hostname: rabbitmq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=rmuser
+      - RABBITMQ_DEFAULT_PASS=rmpassword
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3

@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "amo-1c-sync-v2"
+version = "0.1.0"
+description = ""
+authors = ["kiortir <mpgg2000@gmail.com>"]
+readme = "README.md"
+# packages = [{include = "amo_1c_sync_v2"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.95.1"
+redis = "^4.5.4"
+querystring-parser = "^1.2.4"
+httpx = "^0.24.0"
+yml = "^0.0.1"
+pydantic = {extras = ["dotenv"], version = "^1.10.7"}
+pyyaml = "^6.0"
+prometheus-client = "^0.16.0"
+uvicorn = "^0.21.1"
+gunicorn = "^20.1.0"
+amocrm-api-client = {git = "https://github.com/kiortir/amocrm_api_client.git", rev = "v2.0.16"}
+tenacity = "^8.2.2"
+python-logstash-async = "^2.5.0"
+aiologger = "^0.7.0"
+aioamqp = "^0.15.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
