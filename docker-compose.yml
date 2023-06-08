@@ -124,11 +124,11 @@ services:
       - ./loki/grafana/provisioning/:/etc/grafana/provisioning/
     labels:
       - traefik.enable=true
-      - traefik.http.routers.graphana.entrypoints=https
-      - traefik.http.routers.graphana.rule=PathPrefix("/graphana")
-      - traefik.http.routers.graphana.tls=true
-      - traefik.http.routers.graphana.tls.certresolver=letsEncrypt
-      - traefik.http.services.graphana-service.loadbalancer.server.port=3000
+      - traefik.http.routers.grafana.entrypoints=https
+      - traefik.http.routers.grafana.rule=PathPrefix("/grafana")
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.routers.grafana.tls.certresolver=letsEncrypt
+      - traefik.http.services.grafana-service.loadbalancer.server.port=3000
 
   rabbitmq:
     image: rabbitmq:3.10.7-management
