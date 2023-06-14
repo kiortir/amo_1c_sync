@@ -33,7 +33,7 @@ services:
       - traefik.http.services.traefik-traefik.loadbalancer.server.port=8080
 
   connector:
-    command: uvicorn asgi:app --host 0.0.0.0 --port 8000
+    command: uvicorn asgi:app --host 0.0.0.0 --port 8000 --root-path /connector
     container_name: connector
     depends_on:
       redis:
@@ -62,6 +62,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.connector.entrypoints=https
       - traefik.http.routers.connector.rule=PathPrefix("/connector")
+      - traefik.http.middlewares.connector-stripprefix.stripprefix.prefixes=/connector
+      - traefik.http.routers.connector.middlewares=connector-stripprefix
       - traefik.http.routers.connector.tls=true
       - traefik.http.routers.connector.tls.certresolver=letsEncrypt
       - traefik.http.services.connector.loadbalancer.server.port=8000
