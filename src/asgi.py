@@ -18,16 +18,13 @@ from tasks import dispatch
 
 app = FastAPI(root_path="/connector")
 router = APIRouter(route_class=QSEncodedRoute)
-app.include_router(router)
 manager = None
 protocol = None
 transport = None
 
 
 @router.post("/hook")
-async def manage_webhook(
-    hook: WebHook, background_tasks: BackgroundTasks
-) -> dict[str, str]:
+async def manage_webhook(hook: WebHook) -> dict[str, str]:
     id: int | None = getattr(hook.leads.fields, "id", None)
     if id:
         global manager
@@ -103,3 +100,6 @@ async def deinit() -> None:
     await amologger.shutdown()
     await applogger.shutdown()
     await _1clogger.shutdown()
+
+
+app.include_router(router)
