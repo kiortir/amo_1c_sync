@@ -29,8 +29,10 @@ async def manage_webhook(
 ) -> dict[str, str]:
     id: int | None = getattr(hook.leads.fields, "id", None)
     if id:
-        await amologger.info(msg=f"Обрабатываем информацию по лиду {id}")
-        background_tasks.add_task(dispatch, id)
+        global manager
+        if manager:
+            await amologger.info(msg=f"Обрабатываем информацию по лиду {id}")
+            await manager.push(Task(fn="dispatch", args=id))
     else:
         await amologger.error(msg="Не смогли извлечь id из вебхука")
     return {"status": "ok"}
