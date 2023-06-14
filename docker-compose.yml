@@ -81,6 +81,8 @@ services:
     environment:
       REDIS_HOST: redis
       rabbit_host: rabbitmq
+    env_file:
+      - .sync.env
 
   redis:
     image: "redis:7.0.11"
