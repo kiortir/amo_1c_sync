@@ -18,6 +18,7 @@ from tasks import dispatch
 
 app = FastAPI(root_path="/connector")
 router = APIRouter(route_class=QSEncodedRoute)
+app.include_router(router)
 manager = None
 protocol = None
 transport = None
