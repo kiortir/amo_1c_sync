@@ -14,7 +14,7 @@ import ujson
 from _1c import manager1C
 from amo import amo_client
 from entity import BoundHook
-from logs import applogger, _1clogger
+from logs import amologger, _1clogger
 from settings import ERROR_STATUS, STATUS_TO_DESCRIPTION_MAP, sauna_names
 from statuses import match_status
 import time
@@ -55,7 +55,7 @@ def get_extra_field_value(field: dict[str, Any]) -> Any:
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
 async def dispatch(lead_id: int) -> Lead | None:
     lead = await amo_client.leads.get_by_id(lead_id, _with=("contacts",))
-    applogger.info(f"Получены данные по лиду {lead_id}")
+    amologger.info(f"Получены данные по лиду {lead_id}")
     _1c_status = await manager1C.get_reservation_status(lead_id)
     _1clogger.info(f"Получены данные по лиду {lead_id} из 1с")
 
@@ -99,10 +99,10 @@ async def dispatch(lead_id: int) -> Lead | None:
         **additional_data,
     )
     # except RefreshTokenExpiredException:
-    #     applogger.critical("Токен амо недействителен")
+    #     amologger.critical("Токен амо недействителен")
     #     return None
     # except EntityNotFoundException:
-    #     applogger.warning(f"Лид {lead_id} не найден")
+    #     amologger.warning(f"Лид {lead_id} не найден")
     #     raise EntityNotFoundException
     # except Exception as e:
     #     print(e)
@@ -137,7 +137,7 @@ async def dispatch(lead_id: int) -> Lead | None:
 
 # @retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
 async def send_data_to_1c(data: BoundHook) -> str:
-    applogger.info(f"Отправляем информацию по лиду {data.id}")
+    amologger.info(f"Отправляем информацию по лиду {data.id}")
     response = await manager1C.sync(ujson.loads(data.json()))
     return response
 

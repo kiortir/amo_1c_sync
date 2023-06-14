@@ -56,11 +56,11 @@ async def set_auth_token(
     return {"status": "ok"}
 
 
-@app.get("/test")
-async def test_amqp() -> None:
+@app.get("/test/{lead_id}")
+async def test_amqp(lead_id: int) -> None:
     global manager
     if manager:
-        await manager.push(Task(fn="dispatch", args=17795931))
+        await manager.push(Task(fn="dispatch", args=lead_id))
         return Response(status_code=201)
     else:
         raise HTTPException(500)
