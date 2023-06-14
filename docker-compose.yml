@@ -114,3 +114,32 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
+
+  portainer:
+
+    image: portainer/portainer-ce:2.5.0-alpine
+
+    container_name: portainer
+
+    command: -H unix:///var/run/docker.sock
+
+    restart: always
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+   
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.entrypoints=https
+      - traefik.http.routers.portainer.rule=Host(`portainer.usadba.kiortir.ru`)
+      # - traefik.http.middlewares.connector-stripprefix.stripprefix.prefixes=/connector
+      # - traefik.http.routers.connector.middlewares=connector-stripprefix
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=letsEncrypt
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+
+volumes:
+  portainer_data:
