@@ -62,6 +62,7 @@ async def work(
     envelope: Envelope,
     properties: Properties,
 ) -> None:
+    print(message)
     task = Task.parse_obj(ujson.loads(message))
     fn = TASKS.get(task.fn)
     if not fn:
@@ -94,6 +95,7 @@ async def start() -> None:
 async def main() -> None:
     await start()
     manager = Manager(protocol)
+    print(manager)
     await manager.consume(work)
 
 
