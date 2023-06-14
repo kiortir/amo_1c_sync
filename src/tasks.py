@@ -1,23 +1,17 @@
+import time
 from typing import Any
 
-# from amocrm_api_client.token_provider.core.exceptions import (
-#     RefreshTokenExpiredException,
-# )
-# from amocrm_api_client.make_amocrm_request.core.exceptions import (
-#     EntityNotFoundException,
-# )
-
+import ujson
 from amocrm_api_client.models import AddNote, Contact, Lead, UpdateLead
 from tenacity import RetryError, retry, stop_after_attempt, wait_fixed
-import ujson
 
 from _1c import manager1C
 from amo import amo_client
 from entity import BoundHook
-from logs import amologger, _1clogger
+from redis_client import redis_client
+from logs import _1clogger, amologger, applogger
 from settings import ERROR_STATUS, STATUS_TO_DESCRIPTION_MAP, sauna_names
 from statuses import match_status
-import time
 
 
 def get_phone_number(contact: Contact) -> int | None:
@@ -98,16 +92,13 @@ async def dispatch(lead_id: int) -> Lead | None:
         phone=phone_number,
         **additional_data,
     )
-    # except RefreshTokenExpiredException:
-    #     amologger.critical("Токен амо недействителен")
-    #     return None
-    # except EntityNotFoundException:
-    #     amologger.warning(f"Лид {lead_id} не найден")
-    #     raise EntityNotFoundException
-    # except Exception as e:
-    #     print(e)
-    # hash = data.hash()
 
+    generated_hash = data.make_hash()
+    stored_hash = redis_client.get(lead_id)
+    if generated_hash == stored_hash:
+        applogger.info(f"Информация по лиду {lead_id} уже актуальна")
+        return None
+    redis_client.setex(lead_id, 100, hash)
     try:
         now = time.monotonic()
         response_status = await send_data_to_1c(data)

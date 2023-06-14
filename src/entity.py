@@ -91,8 +91,8 @@ class BoundHook(BaseModel):
     name: Optional[str]
     phone: Optional[int]
 
-    def hash(self) -> str:
-        return "".join([str(value) for value in self.dict().values()])
+    def make_hash(self) -> int:
+        return hash("".join([str(value) for value in self.dict().values()]))
 
     class Config:
         json_encoders = {
