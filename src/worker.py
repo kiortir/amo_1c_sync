@@ -46,7 +46,9 @@ async def apply(
         await coroutine  # fn(task.args)
     except RetryError:
         await channel.publish(
-            Task(fn="set_error_status", args=message).json(),
+            Task(
+                fn="set_error_status", args=ujson.loads(message)["args"]
+            ).json(),
             "",
             envelope.routing_key,
         )
@@ -118,6 +120,8 @@ if __name__ == "__main__":
     loop.create_task(main())
     try:
         loop.run_forever()
+    except Exception as e:
+        print(e)
     finally:
         loop.run_until_complete(shutdown())
-    loop.close()
+        loop.close()

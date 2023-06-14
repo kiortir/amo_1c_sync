@@ -8,7 +8,6 @@ __all__ = ["applogger", "amologger", "_1clogger"]
 
 handler = AsyncStreamHandler(stream=sys.stdout)
 
-
-applogger = Logger.with_default_handlers(name="app")
-amologger = Logger.with_default_handlers(name="amo")
-_1clogger = Logger.with_default_handlers(name="1c")
+applogger = Logger(name="app", handlers=[handler])
+amologger = Logger(name="amo", handlers=[handler])
+_1clogger = Logger(name="1c", handlers=[handler])
