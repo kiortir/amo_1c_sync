@@ -92,7 +92,6 @@ class BoundHook(BaseModel):
     phone: Optional[int]
 
     def make_hash(self) -> int:
-        print(hash("".join([str(value) for value in self.dict().values()])))
         return hash("".join([str(value) for value in self.dict().values()]))
 
     class Config:
