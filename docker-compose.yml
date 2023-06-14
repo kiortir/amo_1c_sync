@@ -87,8 +87,6 @@ services:
   redis:
     image: "redis:7.0.11"
     container_name: redis
-    # ports:
-    #   - 6379:6379
 
     volumes:
       - .services/redis/redis-data:/var/lib/redis
@@ -96,58 +94,6 @@ services:
 
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
-
-  dozzle:
-    container_name: dozzle
-    image: amir20/dozzle:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    secrets:
-      - dozzle_user
-      - dozzle_password
-    ports:
-      - 8080:8080
-    environment:
-      DOZZLE_LEVEL: debug
-      DOZZLE_USERNAME_FILE: /run/secrets/dozzle_user
-      DOZZLE_PASSWORD_FILE: /run/secrets/dozzle_password
-
-  # loki:
-  #   image: grafana/loki:2.6.1
-  #   # ports:
-  #   #   - "3100"
-  #   volumes:
-  #     # directory must be created first, with uid:gid 10001:10001
-  #     - ./volumes/loki:/loki
-
-  # promtail:
-  #   image: grafana/promtail:2.6.1
-  #   volumes:
-  #     # custom config will read logs from the containers of
-  #     # this project
-  #     - ./loki/promtail-config.yaml:/etc/promtail/config.yml
-  #     # to read container labels and logs
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /var/lib/docker/containers:/var/lib/docker/containers
-
-  # # will be available at http://127.0.0.1:3000
-  # # default credentials: admin/admin
-  # grafana:
-  #   image: grafana/grafana:9.2.2
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     # directory must be created first, with uid:gid 472:472
-  #     - ./volumes/grafana:/var/lib/grafana
-  #     # automatically configure the loki datasource
-  #     - ./loki/grafana/provisioning/:/etc/grafana/provisioning/
-  #   labels:
-  #     - traefik.enable=true
-  #     - traefik.http.routers.grafana.entrypoints=https
-  #     - traefik.http.routers.grafana.rule=Host(`logs.usadba.kiortir.ru`)
-  #     - traefik.http.routers.grafana.tls=true
-  #     - traefik.http.routers.grafana.tls.certresolver=letsEncrypt
-  #     - traefik.http.services.grafana-service.loadbalancer.server.port=3000
 
   rabbitmq:
     image: rabbitmq:3.10.7-management
@@ -168,9 +114,3 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
-
-secrets:
-  dozzle_user:
-    file: secrets/dozzle_user.txt
-  dozzle_password:
-    file: secrets/dozzle_password.txt
