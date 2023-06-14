@@ -44,8 +44,8 @@ services:
       context: ./
 
     # command: gunicorn service.main:service --bind 0.0.0.0:80 -k uvicorn.workers.UvicornWorker
-    ports:
-      - 8000:8000
+    # ports:
+    #   - 8000:8000
     volumes:
       - .:/service
 
