@@ -58,6 +58,8 @@ async def set_auth_token(
 
 @app.get("/test")
 async def test_amqp() -> None:
+    global manager
+    print(manager)
     if manager:
         await manager.push(Task(fn="dispatch", args=17795931))
         return Response(status_code=201)
