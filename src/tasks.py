@@ -95,6 +95,7 @@ async def dispatch(lead_id: int) -> Lead | None:
 
     generated_hash = data.make_hash()
     stored_hash = await redis_client.get(lead_id)
+    print(stored_hash, generated_hash)
     if generated_hash == stored_hash:
         applogger.info(f"Информация по лиду {lead_id} уже актуальна")
         return None
