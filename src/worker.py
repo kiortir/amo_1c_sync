@@ -13,9 +13,9 @@ from logs import applogger, amologger, _1clogger
 from rabbit import Channel, Manager, connect
 from settings import ERROR_STATUS
 from statuses import Status
-from tasks import dispatch, set_error_status
+from tasks import dispatch, set_error_status_by_id
 
-TASKS = {"dispatch": dispatch, "set_error_status": set_error_status}
+TASKS = {"dispatch": dispatch, "set_error_status": set_error_status_by_id}
 
 
 async def fetch_statuses() -> None:

@@ -153,6 +153,17 @@ async def set_error_status(lead: Lead) -> None:
             await amo_client.leads.update(update_lead)
 
 
+async def set_error_status_by_id(lead_id: int) -> None:
+    lead = await amo_client.leads.get_by_id(lead_id)
+    if lead.pipeline_id:
+        new_status = ERROR_STATUS.get(lead.pipeline_id)
+        if new_status:
+            update_lead = UpdateLead(
+                id=lead.id, status_id=new_status, _embedded=None
+            )
+            await amo_client.leads.update(update_lead)
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 async def set_note(lead: Lead, message: str) -> None:
     note = AddNote(
